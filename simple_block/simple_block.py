@@ -1,7 +1,9 @@
 import numpy as np
 from numba import njit
-import utils
+
 import asymptotic
+import utils
+from .ignore import IgnoreFactory
 
 '''Part 1: SimpleBlock class and @simple decorator to generate it'''
 
@@ -36,8 +38,8 @@ class SimpleBlock:
         return f"<SimpleBlock '{self.f.__name__}'>"
 
     def ss(self, *args, **kwargs):
-        args = [Ignore(x) for x in args]
-        kwargs = {k: Ignore(v) for k, v in kwargs.items()}
+        args = [IgnoreFactory().ignore(x) for x in args]
+        kwargs = {k: IgnoreFactory().ignore(v) for k, v in kwargs.items()}
         return self.f(*args, **kwargs)
 
     def td(self, ss, **kwargs):
@@ -49,7 +51,7 @@ class SimpleBlock:
 
         for k in self.input_list:
             if k not in kwargs_new:
-                kwargs_new[k] = Ignore(ss[k])
+                kwargs_new[k] = IgnoreFactory().ignore(ss[k])
 
         return dict(zip(self.output_list, utils.make_tuple(self.f(**kwargs_new))))
 
@@ -83,7 +85,10 @@ class SimpleBlock:
         # initialize dict of default inputs k on which we'll evaluate simple blocks
         # each element is 'Ignore' object containing ss value of input k that ignores
         # time displacement, i.e. k(3) in a simple block will evaluate to just ss k
-        x_ss_new = {k: Ignore(ss[k]) for k in self.input_list}
+        #x_ss_new = {k: Ignore(ss[k]) for k in self.input_list} TODO: uncomment and delete following lines
+        x_ss_new = {}
+        for k in self.input_list:
+            x_ss_new[k] = IgnoreFactory().ignore(ss[k])
 
         # loop over all inputs k which we want to differentiate
         for k in shock_list:
@@ -117,7 +122,7 @@ class SimpleBlock:
                         sparsederiv[i] = (y_up - y_down) / (2 * h)
             
             # replace our Perturb object for k with Ignore object, so we can run with other k
-            x_ss_new[k] = Ignore(ss[k])
+            x_ss_new[k] = IgnoreFactory().ignore(ss[k])
 
         # process raw_derivatives to return either SimpleSparse objects or (if T provided) matrices
         J = {o: {} for o in self.output_list}
@@ -363,12 +368,6 @@ def multiply_rs_matrix(indices, xs, A):
 
 '''Part 3: helper classes used by SimpleBlock for .ss, .td, and .jac evaluation'''
 
-
-class Ignore(float):
-    """This class ignores time displacements of a scalar."""
-
-    def __call__(self, index):
-        return self
 
 
 class Displace(np.ndarray):
