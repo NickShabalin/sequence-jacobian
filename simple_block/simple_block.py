@@ -7,7 +7,7 @@ from ._displace import Displace
 from ._ignore import IgnoreFactory
 from ._perturb import PerturbFactory
 from ._reporter import ReporterFactory
-from ._simple_sparse import SimpleSparse
+from ._simple_sparse import SimpleSparseFactory
 
 
 def simple(f):
@@ -131,8 +131,8 @@ class SimpleBlock:
         for o in self.output_list:
             for k in raw_derivatives[o].keys():
                 if T is None:
-                    J[o][k] = SimpleSparse.from_simple_diagonals(raw_derivatives[o][k])
+                    J[o][k] = SimpleSparseFactory(raw_derivatives[o][k]).build_from_dimple_diagonals()
                 else:
-                    J[o][k] = SimpleSparse.from_simple_diagonals(raw_derivatives[o][k]).matrix(T)
+                    J[o][k] = SimpleSparseFactory(raw_derivatives[o][k]).build_from_dimple_diagonals().matrix(T)
 
         return J

@@ -460,7 +460,7 @@ class IdentityMatrix:
 
     def sparse(self):
         """Equivalent SimpleSparse representation, less efficient operations but more general."""
-        return sim.SimpleSparse({(0, 0): 1})
+        return sim.SimpleSparseFactory({(0, 0): 1}).build()
 
     def matrix(self, T):
         return np.eye(T)
