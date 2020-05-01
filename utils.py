@@ -936,3 +936,12 @@ def take_subarray(A, shape):
 
     # take subarray along those dimensions: A[:shape, ...]
     return A[tuple(slice(None, x, None) for x in shape) + (Ellipsis,)]
+
+
+def compare_y_up_down(y_up, y_down) -> bool:
+    if isinstance(y_up, int) or isinstance(y_up, float):
+        return y_up != y_down
+    elif isinstance(y_up, np.ndarray):
+        return any(y_up != y_down)
+    else:
+        raise TypeError("Method can compare only floats, ints and ndarrays")
