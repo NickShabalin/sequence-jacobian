@@ -5,6 +5,8 @@ import asymptotic
 import utils
 from ._ignore import IgnoreFactory
 from ._perturb import PerturbFactory
+from ._reporter import ReporterFactory
+from ._displace import Displace
 
 '''Part 1: SimpleBlock class and @simple decorator to generate it'''
 
@@ -96,7 +98,7 @@ class SimpleBlock:
             # detect all non-zero time displacements i with which k(i) appears in f
             # wrap steady-state values in Reporter class (similar to Ignore but adds any time
             # displacements to shared set), then feed into f
-            reporter = Reporter(ss[k])
+            reporter = ReporterFactory().reporter(ss[k])
             x_ss_new[k] = reporter
             self.f(**x_ss_new)
             relevant_displacements = reporter.myset
@@ -107,11 +109,11 @@ class SimpleBlock:
             # evaluate derivative with respect to input at each displacement i
             for i in relevant_displacements:
                 # perturb k(i) up by +h from steady state and evaluate f
-                x_ss_new[k] = PerturbFactory.perturb(ss[k], h, i)
+                x_ss_new[k] = PerturbFactory().perturb(ss[k], h, i)
                 y_up_all = utils.make_tuple(self.f(**x_ss_new))
 
                 # perturb k(i) down by -h from steady state and evaluate f
-                x_ss_new[k] = PerturbFactory.perturb(ss[k], -h, i)
+                x_ss_new[k] = PerturbFactory().perturb(ss[k], -h, i)
                 y_down_all = utils.make_tuple(self.f(**x_ss_new))
 
                 # for each output o of f, if affected, store derivative in rawderivatives[o][k][i]
@@ -365,34 +367,3 @@ def multiply_rs_matrix(indices, xs, A):
                 for s in range(S):
                     Aout[t, s] += x * A[t + i, s]
     return Aout
-
-
-'''Part 3: helper classes used by SimpleBlock for .ss, .td, and .jac evaluation'''
-
-
-
-class Displace(np.ndarray):
-    """This class makes time displacements of a time path, given the steady-state value.
-    Needed for SimpleBlock.td()"""
-
-    def __new__(cls, x, ss=None, name='UNKNOWN'):
-        obj = np.asarray(x).view(cls)
-        obj.ss = ss
-        obj.name = name
-        return obj
-
-    def __call__(self, index):
-        if index != 0:
-            if self.ss is None:
-                raise KeyError(f'Trying to call {self.name}({index}), but steady-state {self.name} not given!')
-            newx = np.empty_like(self)
-            if index > 0:
-                newx[:-index] = self[index:]
-                newx[-index:] = self.ss
-            else:
-                newx[-index:] = self[:index]
-                newx[:-index] = self.ss
-            return newx
-        else:
-            return self
-
