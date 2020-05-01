@@ -13,6 +13,12 @@ class IgnoreScalar(float):
 class IgnoreVector(np.ndarray):
     """This class ignores time displacements of a vector."""
 
+    def __new__(cls, value):
+        return super().__new__(cls,
+                               shape=(len(value),),
+                               buffer=value,
+                               dtype=value.dtype)
+
     def __call__(self, index):
         return self
 
