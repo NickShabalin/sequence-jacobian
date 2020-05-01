@@ -3,7 +3,8 @@ from numba import njit
 
 import asymptotic
 import utils
-from .ignore import IgnoreFactory
+from ._ignore import IgnoreFactory
+from ._perturb import PerturbFactory
 
 '''Part 1: SimpleBlock class and @simple decorator to generate it'''
 
@@ -106,11 +107,11 @@ class SimpleBlock:
             # evaluate derivative with respect to input at each displacement i
             for i in relevant_displacements:
                 # perturb k(i) up by +h from steady state and evaluate f
-                x_ss_new[k] = Perturb(ss[k], h, i)
+                x_ss_new[k] = PerturbFactory.perturb(ss[k], h, i)
                 y_up_all = utils.make_tuple(self.f(**x_ss_new))
 
                 # perturb k(i) down by -h from steady state and evaluate f
-                x_ss_new[k] = Perturb(ss[k], -h, i)
+                x_ss_new[k] = PerturbFactory.perturb(ss[k], -h, i)
                 y_down_all = utils.make_tuple(self.f(**x_ss_new))
 
                 # for each output o of f, if affected, store derivative in rawderivatives[o][k][i]
@@ -120,7 +121,7 @@ class SimpleBlock:
                     if y_up != y_down:
                         sparsederiv = raw_derivatives[o].setdefault(k, {})
                         sparsederiv[i] = (y_up - y_down) / (2 * h)
-            
+
             # replace our Perturb object for k with Ignore object, so we can run with other k
             x_ss_new[k] = IgnoreFactory().ignore(ss[k])
 
@@ -408,28 +409,3 @@ class Reporter(float):
         return self
 
 
-class Perturb(float):
-    """This class uses the shared set to perturb each x[i] separately, starting at steady-state values.
-    Needed for differentiation in SimpleBlock.jac()"""
-
-    def __new__(cls, value, h, index):
-        if index == 0:
-            return float.__new__(cls, value + h)
-        else:
-            return float.__new__(cls, value)
-
-    def __init__(self, value, h, index):
-        self.h = h
-        self.index = index
-
-    def __call__(self, index):
-        if self.index == 0:
-            if index == 0:
-                return self
-            else:
-                return self - self.h
-        else:
-            if self.index == index:
-                return self + self.h
-            else:
-                return self
