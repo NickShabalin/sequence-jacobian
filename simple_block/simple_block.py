@@ -396,16 +396,3 @@ class Displace(np.ndarray):
         else:
             return self
 
-
-class Reporter(float):
-    """This class adds to a shared set to tell us what x[i] are accessed.
-    Needed for differentiation in SimpleBlock.jac()"""
-
-    def __init__(self, value):
-        self.myset = set()
-
-    def __call__(self, index):
-        self.myset.add(index)
-        return self
-
-
