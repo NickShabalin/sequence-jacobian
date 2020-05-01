@@ -11,19 +11,6 @@ class SimpleSparseScalar(SimpleSparseAbstract):
     See parent class documentation for the more details
     """
 
-    def array(self):
-        """
-        Rewrite dict (i, m) -> x as pair of NumPy arrays, one size-N*2 array of ints with rows (i, m)
-        and one size-N array of floats with entries x.
-        This is needed for Numba to take as input. Cache for efficiency.
-        """
-        if self.indices is not None:
-            return self.indices, self.xs
-        else:
-            indices, xs = zip(*self.elements.items())
-            self.indices, self.xs = np.array(indices), np.array(xs)
-            return self.indices, self.xs
-
     @property
     def asymptotic_time_invariant(self):
         indices, xs = self.array()
@@ -68,6 +55,9 @@ class SimpleSparseScalar(SimpleSparseAbstract):
                     A[i + (T + 1) * m:(T - i) * T:T + 1] += x
             return A.reshape((T, T))
 
+    def __eq__(self, s):
+        return self.elements == s.elements
+
     def __matmul__(self, A):
         if isinstance(A, SimpleSparseScalar):
             # multiply SimpleSparse by SimpleSparse, simple analytical rules in multiply_rs_rs
@@ -98,7 +88,7 @@ class SimpleSparseScalar(SimpleSparseAbstract):
             raise
 
     def __repr__(self):
-        formatted = '{' + ', '.join(f'({i}, {m}): {x}' for (i, m), x in self.elements.items()) + '}'
+        formatted = '{' + ', '.join(f'({i}, {m}): {x:.3f}' for (i, m), x in self.elements.items()) + '}'
         return f'SimpleSparse({formatted})'
 
     def __rmatmul__(self, A):

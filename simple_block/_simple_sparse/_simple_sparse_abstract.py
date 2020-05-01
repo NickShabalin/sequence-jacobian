@@ -2,6 +2,8 @@
 
 import abc
 
+import numpy as np
+
 
 class SimpleSparseAbstract(abc.ABC):
     """
@@ -46,20 +48,25 @@ class SimpleSparseAbstract(abc.ABC):
 
     # non - abstract methods --------------------------------------------------
 
-    @property
-    def T(self):
-        """Transpose"""
-        return type(self)({(-i, m): x for (i, m), x in self.elements.items()})
-
-    # abstract methods --------------------------------------------------------
-
-    @abc.abstractmethod
     def array(self):
         """
         Rewrite dict (i, m) -> x as pair of NumPy arrays, one size-N*2 array of ints with rows (i, m)
         and one size-N array of floats with entries x.
         This is needed for Numba to take as input. Cache for efficiency.
         """
+        if self.indices is not None:
+            return self.indices, self.xs
+        else:
+            indices, xs = zip(*self.elements.items())
+            self.indices, self.xs = np.array(indices), np.array(xs)
+            return self.indices, self.xs
+
+    @property
+    def T(self):
+        """Transpose"""
+        return type(self)({(-i, m): x for (i, m), x in self.elements.items()})
+
+    # abstract methods --------------------------------------------------------
 
     @property
     @abc.abstractmethod
@@ -71,9 +78,6 @@ class SimpleSparseAbstract(abc.ABC):
         """Return matrix giving first T rows and T columns of matrix representation of SimpleSparse"""
 
     # non abstract magic methods ----------------------------------------------
-
-    def __eq__(self, s):
-        return self.elements == s.elements
 
     def __neg__(self):
         return type(self)({im: -x for im, x in self.elements.items()})
@@ -108,6 +112,10 @@ class SimpleSparseAbstract(abc.ABC):
 
     @abc.abstractmethod
     def __add__(self, A):
+        pass
+
+    @abc.abstractmethod
+    def __eq__(self, s):
         pass
 
     @abc.abstractmethod

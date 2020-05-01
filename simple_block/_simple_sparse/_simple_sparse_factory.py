@@ -6,6 +6,7 @@ from ._simple_sparse_vector import SimpleSparseVector
 
 
 class SimpleSparseFactory:
+    # TODO: validate if all elements are of one type and the same shape\size (for vectors)
     _SCALAR_FACTORY = 0
     _VECTOR_FACTORY = 1
 

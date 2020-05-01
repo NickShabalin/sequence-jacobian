@@ -11,13 +11,6 @@ class SimpleSparseVector(SimpleSparseAbstract):
     See parent class documentation for the more details
     """
 
-    def array(self):
-        """
-        Rewrite dict (i, m) -> x as pair of NumPy arrays, one size-N*2 array of ints with rows (i, m)
-        and one size-N array of floats with entries x.
-        This is needed for Numba to take as input. Cache for efficiency.
-        """
-        raise NotImplementedError
 
     @property
     def asymptotic_time_invariant(self):
@@ -32,6 +25,13 @@ class SimpleSparseVector(SimpleSparseAbstract):
     def __add__(self, A):
         raise NotImplementedError
 
+    def __eq__(self, s):
+        if self.elements.keys() != s.elements.keys():
+            return False
+        return all([all(self.elements[k] == s.elements[k]) for k in self.elements.keys()])
+
+
+
     def __matmul__(self, A):
         raise NotImplementedError
 
@@ -42,7 +42,8 @@ class SimpleSparseVector(SimpleSparseAbstract):
         raise NotImplementedError
 
     def __repr__(self):
-        raise NotImplementedError
+        formatted = '{' + ', '.join(f'({i}, {m}): {x}' for (i, m), x in self.elements.items()) + '}'
+        return f'SimpleSparse({formatted})'
 
     def __rmatmul__(self, A):
         # multiplication rule when this object is on right (will only be called when left is matrix)
