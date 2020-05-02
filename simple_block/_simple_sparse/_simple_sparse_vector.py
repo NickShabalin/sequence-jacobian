@@ -24,7 +24,7 @@ class SimpleSparseVector(SimpleSparseAbstract):
 
     def matrix(self, T):
         """Return matrix giving first T rows and T columns of matrix representation of SimpleSparse"""
-        raise NotImplementedError
+        return self + np.zeros((T, T, len(tuple(self.elements.values())[0])))
 
 
     # magic methods -----------------------------------------------------------
@@ -43,7 +43,25 @@ class SimpleSparseVector(SimpleSparseAbstract):
                     elements[im] = x
             return SimpleSparseVector(elements)
         else:
-            raise NotImplementedError
+            if not isinstance(A, np.ndarray) or A.ndim != 3 or A.shape[0] != A.shape[1]:
+                return NotImplemented
+            T = A.shape[0]
+
+            res = []
+            for i in A:
+                for j in i:
+                    res.append(j)
+            res = np.array(res)
+
+            A = res
+
+            for (i, m), x in self.elements.items():
+                if i < 0:
+                    A[T * (-i) + (T + 1) * m::T + 1,] += x
+                else:
+                    A[i + (T + 1) * m:(T - i) * T:T + 1,] += x
+            return A.reshape((T, T, len(tuple(self.elements.values())[0])))
+
 
     def __eq__(self, s):
         if self.elements.keys() != s.elements.keys(): return False
@@ -56,10 +74,10 @@ class SimpleSparseVector(SimpleSparseAbstract):
         elif isinstance(A, np.ndarray):
             # multiply SimpleSparse by matrix or vector, multiply_rs_matrix uses slicing
             indices, xs = self.array()
-            if A.ndim == 3:
+            if A.ndim == 2:
+                return multiply_rs_matrix_2d(indices, xs, A)
+            elif A.ndim == 3:
                 return multiply_rs_matrix_3d(indices, xs, A)
-            elif A.ndim == 4:
-                return multiply_rs_matrix_4d(indices, xs, A)
             else:
                 return NotImplemented
         else:
@@ -108,10 +126,10 @@ def multiply_rs_rs(s1, s2):
 
 
 @njit
-def multiply_rs_matrix_3d(indices, xs, A):
+def multiply_rs_matrix_2d(indices, xs, A):
     raise NotImplementedError
 
 
 @njit
-def multiply_rs_matrix_4d(indices, xs, A):
+def multiply_rs_matrix_3d(indices, xs, A):
     raise NotImplementedError
