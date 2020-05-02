@@ -1,9 +1,11 @@
+import logging
+
 import numpy as np
-from scipy.linalg import toeplitz
 from numpy.fft import rfft, rfftn, irfft, irfftn
-from numba import njit
-import jacobian as jac
+
 import determinacy
+import jacobian as jac
+
 
 class AsymptoticTimeInvariant:
     """Represents the asymptotic behavior of infinite matrix that is asymptotically time invariant,
@@ -19,6 +21,7 @@ class AsymptoticTimeInvariant:
     __array_priority__ = 2000
 
     def __init__(self, v):
+        self._log = logging.getLogger(f"{self.__class__.__name__}")
         self.v = v
 
         # v should be -(tau-1), ... , 0, ..., tau-1 asymp column around main diagonal
@@ -39,7 +42,8 @@ class AsymptoticTimeInvariant:
         elif tau < self.tau:
             return AsymptoticTimeInvariant(self.v[self.tau - tau: tau + self.tau - 1])
         else:
-            v = np.zeros(2*tau-1)
+            # vector and matrix support
+            v = np.zeros(2 * tau - 1) if self.v.ndim == 1 else np.zeros((2 * tau - 1, len(self.v[0])))
             v[tau - self.tau: tau + self.tau - 1] = self.v
             return AsymptoticTimeInvariant(v)
 
@@ -109,6 +113,29 @@ class AsymptoticTimeInvariant:
                 newself = self.changetau(other.tau)
 
             # now just add the corresponding vectors v
+
+            # HACK START ------------------------------------------------------
+            # Hack for vector support. TODO: write a test
+            if self.v.ndim != other.v.ndim and len(self.v) != len(other.v):
+                self._log.warning("Attempt to sum AsymptoticTimeInvariants with unequal dimensions")
+
+                # sort values pair by dimension number in ascending order
+                left, right = sorted((self.v, other.v), key=lambda x: x.ndim)
+
+                # validate condition
+                if any((not len(left) % 2, not len(right) % 2, len(left) < len(right), right.ndim != 1)):
+                    raise ValueError
+
+                # transform left to flatten array and pad with zeros from left and right
+                right_flatten = right.flatten()
+                padding_len = (len(left) - len(right_flatten)) // 2
+                padding_list = [0 for i in range(padding_len)]
+                right_flatten_padded = np.array(padding_list + list(right_flatten) + padding_list)
+
+                # calc sum and return new AsymptoticTimeInvariant
+                return AsymptoticTimeInvariant(left + right_flatten_padded)
+            # HACK END --------------------------------------------------------
+
             return AsymptoticTimeInvariant(newself.v + other.v)
         elif hasattr(other, 'asymptotic_time_invariant'):
             # convert non-ATI argument to ATI if possible (same as matmul)
@@ -138,7 +165,7 @@ class AsymptoticTimeInvariant:
 
     def __eq__(self, other):
         return np.array_equal(self.v, other.v) if isinstance(other, AsymptoticTimeInvariant) else False
-    
+
 
 def invert_jacdict(jacdict, unknowns, targets, tau, test_invertible=False):
     """Given a nested dict of ATI Jacobians that maps unknowns -> targets, e.g. an asymptotic
@@ -182,18 +209,18 @@ def invert_jacdict(jacdict, unknowns, targets, tau, test_invertible=False):
     if test_invertible:
         # use winding number criterion to test invertibility
         if determinacy.winding_criterion(A, N=4096) != 0:
-            raise ValueError('Trying to invert asymptotic time invariant system of Jacobians' + 
+            raise ValueError('Trying to invert asymptotic time invariant system of Jacobians' +
                              ' but winding number test says that it is not uniquely invertible!')
 
     # take FFT of first dimension (time) of A (i.e. take FFT separtely of all k^2 Jacobians)
     A_rfft = rfftn(A, s=(4*tau-3,), axes=(0,))
-    
+
     # take FFT of identity operator (for efficiency, reuse smaller calc)
     id_vec_rfft = rfft(np.arange(4*tau-3)==(2*tau-2))
     id_rfft = np.zeros((2*tau-1, k, k), dtype=np.complex128)
     for i in range(k):
         id_rfft[:, i, i] = id_vec_rfft
-    
+
     # now solve the linear system to invert A frequency-by-frequency
     # (since frequency is leading dimension, np.linalg.solve automatically does this)
     A_rfft_inv = np.linalg.solve(A_rfft, id_rfft)
