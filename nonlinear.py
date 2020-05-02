@@ -3,6 +3,8 @@ import utils
 import jacobian as jac
 import het_block as het
 
+import logging
+import inspect
 
 def td_solve(ss, block_list, unknowns, targets, H_U=None, H_U_factored=None, monotonic=False,
              returnindividual=False, tol=1E-8, maxit=30, noisy=True, save=False, use_saved=False, **kwargs):
@@ -33,6 +35,9 @@ def td_solve(ss, block_list, unknowns, targets, H_U=None, H_U_factored=None, mon
     results : dict, return paths for all aggregate variables, plus individual outcomes of HetBlock if returnindividual
     """
     # check to make sure that kwargs are valid shocks
+
+    log = logging.getLogger(inspect.stack()[0][3])
+
     for x in unknowns + targets:
         if x in kwargs:
             raise ValueError(f'Shock {x} in td_solve cannot also be an unknown or target!')
@@ -61,9 +66,9 @@ def td_solve(ss, block_list, unknowns, targets, H_U=None, H_U_factored=None, mon
         results = td_map(ss, block_list, sort, monotonic, returnindividual, **kwargs, **Us)
         errors = {k: np.max(np.abs(results[k])) for k in targets}
         if noisy:
-            print(f'On iteration {it}')
+            log.debug(f'On iteration {it}')
             for k in errors:
-                print(f'   max error for {k} is {errors[k]:.2E}')
+                log.warning(f'max error for {k} is {errors[k]:.2E}')
         if all(v < tol for v in errors.values()):
             break
         else:

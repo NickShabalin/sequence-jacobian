@@ -1,9 +1,11 @@
-import numpy as np
-from scipy.stats import norm
-from numba import njit, guvectorize
-import scipy.linalg
-import re
 import inspect
+import logging
+import re
+
+import numpy as np
+import scipy.linalg
+from numba import njit, guvectorize
+from scipy.stats import norm
 
 '''Part 1: Efficient linear interpolation exploiting monotonicity.
 
@@ -705,12 +707,13 @@ def broyden_update(J, dx, dy):
 
 def printit(it, x, y, **kwargs):
     """Convenience printing function for noisy iterations"""
-    print(f'On iteration {it}')
-    print(('x = %.3f' + ',%.3f' * (len(x) - 1)) % tuple(x))
-    print(('y = %.3f' + ',%.3f' * (len(y) - 1)) % tuple(y))
+    log = logging.getLogger(f"utils::printit")
+    log.info(f'On iteration {it}')
+    log.info(('x = %.3f' + ',%.3f' * (len(x) - 1)) % tuple(x))
+    log.info(('y = %.3f' + ',%.3f' * (len(y) - 1)) % tuple(y))
     for kw, val in kwargs.items():
-        print(f'{kw} = {val:.3f}')
-    print('\n')
+        log.info(f'{kw} = {val:.3f}')
+    log.info("="*20)
 
 
 '''Part 8: topological sort and related code'''

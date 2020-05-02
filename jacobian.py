@@ -1,9 +1,11 @@
-import numpy as np
 import copy
-import utils
-import simple_block as sim
-import asymptotic
+import logging
 
+import numpy as np
+
+import asymptotic
+import simple_block as sim
+import utils
 
 '''Part 1: High-level convenience routines: 
     - get_H_U               : get H_U matrix mapping all unknowns to all targets
@@ -41,17 +43,23 @@ def get_H_U(block_list, unknowns, targets, T, ss=None, asymptotic=False, Tpost=N
             array((2*Tpost-1)*n_u*n_u), representation of asymptotic columns of H_U
     """
 
+    log = logging.getLogger("jacobian::get_H_U")
+
     # do topological sort and get curlyJs
+    log.debug("do topological sort and get curlyJs")
     curlyJs, required = curlyJ_sorted(block_list, unknowns, ss, T, asymptotic, Tpost, save, use_saved)
 
     # do matrix forward accumulation to get H_U = J^(curlyH, curlyU)
+    log.debug("do matrix forward accumulation to get H_U = J^(curlyH, curlyU)")
     H_U_unpacked = forward_accumulate(curlyJs, unknowns, targets, required)
 
     if not asymptotic:
         # pack these n_u^2 matrices, each T*T, into a single matrix
+        log.debug("pack these n_u^2 matrices, each T*T, into a single matrix")
         return pack_jacobians(H_U_unpacked, unknowns, targets, T)
     else:
         # pack these n_u^2 AsymptoticTimeInvariant objects into a single (2*Tpost-1,n_u,n_u) array
+        log.debug("pack these n_u^2 AsymptoticTimeInvariant objects into a single (2*Tpost-1,n_u,n_u) array")
         if Tpost is None:
             Tpost = 2*T
         return pack_asymptotic_jacobians(H_U_unpacked, unknowns, targets, Tpost)

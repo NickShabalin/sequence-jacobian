@@ -1,5 +1,7 @@
 """Part 1: SimpleBlock class and @simple decorator to generate it"""
 
+import logging
+
 import numpy as np
 
 import utils
@@ -30,6 +32,9 @@ class SimpleBlock:
     """
 
     def __init__(self, f):
+        self._log = logging.getLogger(f"{self.__class__.__name__}::{f.__name__}")
+        self._log.debug(f"Initializing")
+
         self.f = f
         self.input_list = utils.input_list(f)
         self.output_list = utils.output_list(f)
@@ -40,11 +45,13 @@ class SimpleBlock:
         return f"<SimpleBlock '{self.f.__name__}'>"
 
     def ss(self, *args, **kwargs):
+        self._log.debug("ss method call")
         args = [IgnoreFactory().ignore(x) for x in args]
         kwargs = {k: IgnoreFactory().ignore(v) for k, v in kwargs.items()}
         return self.f(*args, **kwargs)
 
     def td(self, ss, **kwargs):
+        self._log.debug("td method call")
         kwargs_new = {}
         for k, v in kwargs.items():
             if np.isscalar(v):
@@ -79,6 +86,7 @@ class SimpleBlock:
             This Jacobian is a SimpleSparse object or, if T specific, a T*T matrix, omitted by convention
             if zero
         """
+        self._log.debug("jac method call")
         if shock_list is None:
             shock_list = self.input_list
 
@@ -87,7 +95,7 @@ class SimpleBlock:
         # initialize dict of default inputs k on which we'll evaluate simple blocks
         # each element is 'Ignore' object containing ss value of input k that ignores
         # time displacement, i.e. k(3) in a simple block will evaluate to just ss k
-        #x_ss_new = {k: Ignore(ss[k]) for k in self.input_list} TODO: uncomment and delete following lines
+        # x_ss_new = {k: Ignore(ss[k]) for k in self.input_list} TODO: uncomment and delete following lines
         x_ss_new = {}
         for k in self.input_list:
             x_ss_new[k] = IgnoreFactory().ignore(ss[k])
