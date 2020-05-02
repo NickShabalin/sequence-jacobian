@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 from numba import njit
 
+import asymptotic
 from ._simple_sparse_abstract import SimpleSparseAbstract
 
 
@@ -14,11 +15,17 @@ class SimpleSparseVector(SimpleSparseAbstract):
 
     @property
     def asymptotic_time_invariant(self):
-        raise NotImplementedError
+        indices, xs = self.array()
+        tau = np.max(np.abs(indices[:, 0])) + 1
+        v = np.zeros((2 * tau - 1, len(xs[0])))
+        t = -indices[:, 0] + tau - 1
+        v[-indices[:, 0] + tau - 1] = xs
+        return asymptotic.AsymptoticTimeInvariant(v)
 
     def matrix(self, T):
         """Return matrix giving first T rows and T columns of matrix representation of SimpleSparse"""
         raise NotImplementedError
+
 
     # magic methods -----------------------------------------------------------
 
