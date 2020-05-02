@@ -79,12 +79,17 @@ class SimpleSparseAbstract(abc.ABC):
 
     # non abstract magic methods ----------------------------------------------
 
+    def __mul__(self, a):
+        if not np.isscalar(a): return NotImplemented
+        return type(self)({im: a * x for im, x in self.elements.items()})
+
     def __neg__(self):
         return type(self)({im: -x for im, x in self.elements.items()})
 
     def __pos__(self):
         return self
 
+    # TODO: log errors, fix broad exception
     def __radd__(self, A):
         try:
             return self + A
@@ -120,10 +125,6 @@ class SimpleSparseAbstract(abc.ABC):
 
     @abc.abstractmethod
     def __matmul__(self, A):
-        pass
-
-    @abc.abstractmethod
-    def __mul__(self, a):
         pass
 
     @abc.abstractmethod

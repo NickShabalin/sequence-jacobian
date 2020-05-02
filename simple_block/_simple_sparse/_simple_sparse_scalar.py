@@ -74,19 +74,6 @@ class SimpleSparseScalar(SimpleSparseAbstract):
         else:
             return NotImplemented
 
-    def __mul__(self, a):
-        if not np.isscalar(a):
-            return NotImplemented
-        return SimpleSparseScalar({im: a * x for im, x in self.elements.items()})
-
-    def __radd__(self, A):
-        try:
-            return self + A
-        except Exception:
-            print(self)
-            print(A)
-            raise
-
     def __repr__(self):
         formatted = '{' + ', '.join(f'({i}, {m}): {x:.3f}' for (i, m), x in self.elements.items()) + '}'
         return f'SimpleSparse({formatted})'
