@@ -60,7 +60,7 @@ class SimpleSparseVector(SimpleSparseAbstract):
 
     def __repr__(self):
         formatted = '{' + ', '.join(f'({i}, {m}): {x}' for (i, m), x in self.elements.items()) + '}'
-        return f'SimpleSparse({formatted})'
+        return f'SimpleSparseVector({formatted})'
 
 
 def multiply_basis(t1, t2):

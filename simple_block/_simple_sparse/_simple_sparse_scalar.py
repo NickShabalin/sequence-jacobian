@@ -76,7 +76,7 @@ class SimpleSparseScalar(SimpleSparseAbstract):
 
     def __repr__(self):
         formatted = '{' + ', '.join(f'({i}, {m}): {x:.3f}' for (i, m), x in self.elements.items()) + '}'
-        return f'SimpleSparse({formatted})'
+        return f'SimpleSparseScalar({formatted})'
 
     def __rmatmul__(self, A):
         # multiplication rule when this object is on right (will only be called when left is matrix)
