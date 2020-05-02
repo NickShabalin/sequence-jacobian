@@ -1,6 +1,7 @@
 """Part 2: SimpleSparse class to represent and work with sparse Jacobians of SimpleBlocks"""
 
 import abc
+import logging
 
 import numpy as np
 
@@ -38,6 +39,8 @@ class SimpleSparseAbstract(abc.ABC):
     # Constructors ------------------------------------------------------------
 
     def __init__(self, elements):
+        self._log = logging.getLogger(f"{self.__class__.__name__}")
+        self._log.debug(f"Initializing. Elements: {elements}")
         self.elements = elements
         self.indices, self.xs = None, None
 

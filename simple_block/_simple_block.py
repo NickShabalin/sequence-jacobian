@@ -86,7 +86,7 @@ class SimpleBlock:
             This Jacobian is a SimpleSparse object or, if T specific, a T*T matrix, omitted by convention
             if zero
         """
-        self._log.debug("jac method call")
+        self._log.debug(f"jac method call. Shock list: {shock_list}; h: {h}")
         if shock_list is None:
             shock_list = self.input_list
 
