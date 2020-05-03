@@ -115,21 +115,23 @@ class AsymptoticTimeInvariant:
             # now just add the corresponding vectors v
 
             # HACK START ------------------------------------------------------
-            # Hack for vector support. TODO: write a test
-            if self.v.ndim != other.v.ndim and len(self.v) != len(other.v):
-                self._log.warning("Attempt to sum AsymptoticTimeInvariants with unequal dimensions")
+            # Hack for vector support. TODO: check accurateness, refactor and write a test
+
+            if self.v.ndim != other.v.ndim:
+                self._log.warning("Attempt to sum AsymptoticTimeInvariants with unequal dimensions. "
+                                  f"self: {self.v.shape}; "
+                                  f"other: {other.v.shape}")
 
                 # sort values pair by dimension number in ascending order
                 left, right = sorted((self.v, other.v), key=lambda x: x.ndim)
 
                 # validate condition
-                if any((not len(left) % 2, not len(right) % 2, len(left) < len(right), right.ndim != 1)):
-                    raise ValueError
+                if any((not len(left) % 2, not len(right) % 2, len(left) < len(right))): raise ValueError
 
                 # transform left to flatten array and pad with zeros from left and right
                 right_flatten = right.flatten()
                 padding_len = (len(left) - len(right_flatten)) // 2
-                padding_list = [0 for i in range(padding_len)]
+                padding_list = [0 for _ in range(padding_len)]
                 right_flatten_padded = np.array(padding_list + list(right_flatten) + padding_list)
 
                 # calc sum and return new AsymptoticTimeInvariant
