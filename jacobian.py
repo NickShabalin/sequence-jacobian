@@ -247,14 +247,23 @@ def curlyJ_sorted(block_list, inputs, ss=None, T=None, asymptotic=False, Tpost=N
         if hasattr(block, 'ajac'):
             # has 'ajac' function, is some block other than SimpleBlock
             if asymptotic:
-                jac = block.ajac(ss, T=T,
-                                 shock_list=[i for i in block.inputs if i in shocks], Tpost=Tpost, save=save, use_saved=use_saved)
+                # noinspection PyCallingNonCallable
+                jac = block.ajac(ss,
+                                 T=T,
+                                 shock_list=[i for i in sorted(block.inputs) if i in shocks],
+                                 Tpost=Tpost,
+                                 save=save,
+                                 use_saved=use_saved)
             else:
-                jac = block.jac(ss, T=T,
-                                shock_list=[i for i in block.inputs if i in shocks], save=save, use_saved=use_saved)
+                jac = block.jac(ss,
+                                T=T,
+                                shock_list=[i for i in sorted(block.inputs) if i in shocks],
+                                save=save,
+                                use_saved=use_saved)
         elif hasattr(block, 'jac'):
             # has 'jac' but not 'ajac', must be SimpleBlock where no distinction (given SimpleSparse)
-            jac = block.jac(ss, shock_list=[i for i in block.inputs if i in shocks])
+            # noinspection PyCallingNonCallable
+            jac = block.jac(ss, shock_list=[i for i in sorted(block.inputs) if i in shocks])
         else:
             # doesn't have 'jac', must be nested dict that is jac directly
             jac = block
