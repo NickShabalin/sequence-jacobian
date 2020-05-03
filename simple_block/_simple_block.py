@@ -95,10 +95,7 @@ class SimpleBlock:
         # initialize dict of default inputs k on which we'll evaluate simple blocks
         # each element is 'Ignore' object containing ss value of input k that ignores
         # time displacement, i.e. k(3) in a simple block will evaluate to just ss k
-        # x_ss_new = {k: Ignore(ss[k]) for k in self.input_list} TODO: uncomment and delete following lines
-        x_ss_new = {}
-        for k in self.input_list:
-            x_ss_new[k] = IgnoreFactory().ignore(ss[k])
+        x_ss_new = {k: IgnoreFactory().ignore(ss[k]) for k in self.input_list}
 
         # loop over all inputs k which we want to differentiate
         for k in shock_list:
