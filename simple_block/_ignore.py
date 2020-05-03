@@ -15,7 +15,7 @@ class IgnoreVector(np.ndarray):
 
     def __new__(cls, value):
         return super().__new__(cls,
-                               shape=(len(value),),
+                               shape=value.shape,
                                buffer=value,
                                dtype=value.dtype)
 
