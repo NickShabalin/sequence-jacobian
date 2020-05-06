@@ -1,7 +1,8 @@
 import numpy as np
 from numba import njit
-import utils
+
 import asymptotic
+import utils
 
 '''Part 1: SimpleBlock class and @simple decorator to generate it'''
 
@@ -25,10 +26,10 @@ class SimpleBlock:
     Key methods are .ss, .td, and .jac, like HetBlock.
     """
 
-    def __init__(self, f):
+    def __init__(self, f, **kwargs):
         self.f = f
-        self.input_list = utils.input_list(f)
-        self.output_list = utils.output_list(f)
+        self.input_list = utils.input_list(f)   if "input_list"  not in kwargs else kwargs["input_list"]
+        self.output_list = utils.output_list(f) if "output_list" not in kwargs else kwargs["output_list"]
         self.inputs = set(self.input_list)
         self.outputs = set(self.output_list)
 
