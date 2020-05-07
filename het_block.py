@@ -411,6 +411,11 @@ class HetBlock:
         # modify inputs to include hetinput's additional inputs, remove outputs
         newself.inputs |= newself.hetinput_inputs
         newself.inputs -= set(newself.hetinput_outputs_order)
+        set_outputs = set()
+        for k in range(len(newself.hetinput_outputs_order)):
+            if newself.hetinput_outputs_order[k] != 'z_grid':
+                set_outputs.add(newself.hetinput_outputs_order[k])
+        newself.outputs |= set_outputs
         return newself
 
     '''Part 3: components of ss():

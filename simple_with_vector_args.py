@@ -1,6 +1,7 @@
 import inspect
 import re
 from types import FunctionType
+import numpy as np
 
 from simple_block import SimpleBlock
 
@@ -107,6 +108,7 @@ class SimpleWithVectorArgs:
 
             if left in self._output_list:
                 self._new_output_list.append(f"{left}_{i + 1}")
+                self._inner_vector_values.add(left)
             else:
                 self._inner_vector_values.add(left)
 
