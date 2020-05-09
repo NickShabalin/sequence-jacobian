@@ -6,11 +6,9 @@ import jacobian as jac
 from het_block import het
 from simple_block import simple
 from solved_block import solved
-import two_asset_sec_occ_v2
-import nonlinear
+import two_asset_sec_occ_v3
 import determinacy as det
 from simple_with_vector_args import SimpleWithVectorArgs
-import math
 
 @simple
 def taylor(rstar, pi, phi):
@@ -38,7 +36,8 @@ def mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, A, 
 
 @SimpleWithVectorArgs({"div_sec": 3, "equity_price_sec": 3})
 def arbitrage(div_sec, equity_price_sec, r):
-    equity = div_sec(+1) + equity_price_sec(+1) - equity_price_sec * (1 + r(+1))
+    #equity = div_sec(+1) + equity_price_sec(+1) - equity_price_sec * (1 + r(+1))
+    equity = div_sec + equity_price_sec - equity_price_sec(-1) * (1 + r)
     return equity
 
 @SimpleWithVectorArgs({"Y_sec": 3, "K_sec": 3, "w_sec": 3, "N_sec": 3, "p_sec": 3})
@@ -146,13 +145,89 @@ def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3):
     return C, A, B, U
 
 
+@simple
+def income1(w_occ_1, w_occ_2, w_occ_3, gamma_hh_1_1, gamma_hh_1_2, gamma_hh_1_3, m1, N = 0.33):
+
+    gamma_occ1 = gamma_hh_1_1
+    gamma_occ2 = gamma_hh_1_2
+    gamma_occ3 = gamma_hh_1_3
+
+    N_occ1 = N * m1 * gamma_occ1
+    N_occ2 = N * m1 * gamma_occ2
+    N_occ3 = N * m1 * gamma_occ3
 
 
-ss = two_asset_sec_occ_v2.hank_ss()
+    choice1 = N_occ1 * w_occ_1
+    choice2 = N_occ2 * w_occ_2
+    choice3 = N_occ3 * w_occ_3
+    choices = [choice1, choice2, choice3]
+
+    occupation = choices.index(max(choices))
+
+    N_hh_occ_1_1 = (occupation == 0) * N_occ1
+    N_hh_occ_1_2 = (occupation == 1) * N_occ2
+    N_hh_occ_1_3 = (occupation == 2) * N_occ3
+
+    return N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3
+
+@simple
+def income2(w_occ_1, w_occ_2, w_occ_3, gamma_hh_2_1, gamma_hh_2_2, gamma_hh_2_3, m2, N = 0.33):
+
+    gamma_occ1 = gamma_hh_2_1
+    gamma_occ2 = gamma_hh_2_2
+    gamma_occ3 = gamma_hh_2_3
+
+    N_occ1 = N * m2 * gamma_occ1
+    N_occ2 = N * m2 * gamma_occ2
+    N_occ3 = N * m2 * gamma_occ3
+
+
+    choice1 = N_occ1 * w_occ_1
+    choice2 = N_occ2 * w_occ_2
+    choice3 = N_occ3 * w_occ_3
+    choices = [choice1, choice2, choice3]
+
+    occupation = choices.index(max(choices))
+
+    N_hh_occ_2_1 = (occupation == 0) * N_occ1
+    N_hh_occ_2_2 = (occupation == 1) * N_occ2
+    N_hh_occ_2_3 = (occupation == 2) * N_occ3
+
+    return N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3
+
+@simple
+def income3(w_occ_1, w_occ_2, w_occ_3, gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3, m3, N = 0.33):
+
+    gamma_occ1 = gamma_hh_3_1
+    gamma_occ2 = gamma_hh_3_2
+    gamma_occ3 = gamma_hh_3_3
+
+    N_occ1 = N * m3 * gamma_occ1
+    N_occ2 = N * m3 * gamma_occ2
+    N_occ3 = N * m3 * gamma_occ3
+
+
+    choice1 = N_occ1 * w_occ_1
+    choice2 = N_occ2 * w_occ_2
+    choice3 = N_occ3 * w_occ_3
+    choices = [choice1, choice2, choice3]
+
+    occupation = choices.index(max(choices))
+
+    N_hh_occ_3_1 = (occupation == 0) * N_occ1
+    N_hh_occ_3_2 = (occupation == 1) * N_occ2
+    N_hh_occ_3_3 = (occupation == 2) * N_occ3
+
+
+    return N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3
+
+
+
+ss = two_asset_sec_occ_v3.hank_ss()
 
 T = 300
-block_list = [consumers_aggregator, two_asset_sec_occ_v2.household_inc1, two_asset_sec_occ_v2.household_inc2, two_asset_sec_occ_v2.household_inc3,
-                taylor, fiscal, finance, mkt_clearing, production]
+block_list = [consumers_aggregator, two_asset_sec_occ_v3.household_inc1, two_asset_sec_occ_v3.household_inc2, two_asset_sec_occ_v3.household_inc3,
+                taylor, fiscal, finance, mkt_clearing, production, income1, income2, income3]
 exogenous = ['rstar', 'productivity_sec1', 'productivity_sec2', 'productivity_sec3', 'G']
 unknowns = ['r', 'Bg', 'w_occ_1', 'w_occ_2', 'w_occ_3']
 targets = ['asset_mkt', 'fisher', 'labor_mkt_1', 'labor_mkt_2', 'labor_mkt_3']
