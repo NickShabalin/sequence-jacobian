@@ -1,17 +1,12 @@
-def income1(w_occ_1, w_occ_2, w_occ_3, gamma_hh_1, m1, N = 0.33):
-
-    gamma_occ1 = gamma_hh_1[0]
-    gamma_occ2 = gamma_hh_1[1]
-    gamma_occ3 = gamma_hh_1[2]
-
-    N_occ1 = N * m1 * gamma_occ1
-    N_occ2 = N * m1 * gamma_occ2
-    N_occ3 = N * m1 * gamma_occ3
+def income1(w_occ, gamma_hh_1, m1, N = 0.33):
+    N_occ1 = N * m1 *  gamma_hh_1[0]
+    N_occ2 = N * m1 *  gamma_hh_1[1]
+    N_occ3 = N * m1 * gamma_hh_1[2]
 
 
-    choice1 = N_occ1 * w_occ_1
-    choice2 = N_occ2 * w_occ_2
-    choice3 = N_occ3 * w_occ_3
+    choice1 = N_occ1 * w_occ[0]
+    choice2 = N_occ2 * w_occ[1]
+    choice3 = N_occ3 * w_occ[2]
     choices = [choice1, choice2, choice3]
 
     occupation = choices.index(max(choices))
