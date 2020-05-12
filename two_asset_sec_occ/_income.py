@@ -4,8 +4,8 @@ from numpy import ndarray
 
 
 # noinspection PyPep8Naming
-def income_labour_supply(w_occ: List[float], gamma_hh: List[float], m1: float, N: float = 0.33) -> List[float]:
-    N_occ = [N * m1 * gamma_hh[i] for i in range(3)]
+def income_labour_supply(w_occ: List[float], gamma_hh: List[float], m: float, N: float = 0.33) -> List[float]:
+    N_occ = [N * m * gamma_hh[i] for i in range(3)]
     choices = [N_occ[i] * w_occ[i] for i in range(3)]
     occupation = choices.index(max(choices))
     N_hh_occ = [(occupation == i) * N_occ[i] for i in range(3)]

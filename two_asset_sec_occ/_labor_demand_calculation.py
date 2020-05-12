@@ -4,8 +4,10 @@ import numpy as np
 
 import utils
 
+
 # TODO: add comments and type annotations
 
+# noinspection PyPep8Naming
 class LaborDemandCalculation:
     def __init__(self, alpha_sec_occ, sigma_sec, p_sec, Y_sec, nu_sec, w_occ):
         self._alpha_sec_occ = alpha_sec_occ

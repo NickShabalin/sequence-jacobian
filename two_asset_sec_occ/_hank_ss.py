@@ -9,33 +9,35 @@ from ._labor_demand_calculation import LaborDemandCalculation
 from ._misc import Psi_fun
 
 household_inc1 = household1.attach_hetinput(income_grid)
-household_inc2 = household2.attach_hetinput(income_grid)
-household_inc3 = household3.attach_hetinput(income_grid)
+# household_inc2 = household2.attach_hetinput(income_grid)
+# household_inc3 = household3.attach_hetinput(income_grid)
 
 
 # noinspection PyPep8Naming
 class SSBuilder:
+    def _set_up_gamma_hh(self):
+        self._gamma_hh = [[1.000000000000000, 0.20000000000000, 0.300000000000000],
+                          [0.278417140245438, 1.00000000000000, 0.357559561729431],
+                          [0.257629066705704, 0.32952556014061, 1.000000000000000]]
+
+    def _set_up_N_sec_occ(self):
+        self._N_sec_occ = [[0.662516653537750, 0.182436376810074, 0.155046954751015],
+                           [0.372738629579544, 0.191605582833290, 0.435655802488327],
+                           [0.255537301301956, 0.227060705423355, 0.517401993274688]]
+
     def _calc_grid(self):
         self._b_grid = utils.agrid(amax=self._bmax, n=self._nB)
         self._a_grid = utils.agrid(amax=self._amax, n=self._nA)
         self._k_grid = utils.agrid(amax=self._kmax, n=self._nK)
         self._e_grid, self._pi, self._Pi = utils.markov_rouwenhorst(rho=self._rho_z, sigma=self._sigma_z, N=self._nZ)
 
-    def _set_up_gamma_hh(self):
-        self._gamma_hh = [[1.000000000000000, 0.20000000000000, 0.300000000000000],
-                          [0.278417140245438, 1.00000000000000, 0.357559561729431],
-                          [0.257629066705704, 0.32952556014061, 1.000000000000000]]
+    def _calc_eta(self):
+        self._eta = (1 - self._mup) / self._mup
 
-    def _set_up_nu_sec(self):
-        self._nu_sec = [0.425027757883072, 0.538959443569183, 0.273549377918243]
-
-    def _set_up_Q_sec(self):
-        self._Q_sec = [1, 1, 1]
-
-    def _set_up_N_sec_occ(self):
-        self._N_sec_occ = [[0.662516653537750, 0.182436376810074, 0.155046954751015],
-                           [0.372738629579544, 0.191605582833290, 0.435655802488327],
-                           [0.255537301301956, 0.227060705423355, 0.517401993274688]]
+    def _calc_Y(self):
+        self._Y = (self._Y_sec[0] ** ((self._eta - 1) / self._eta) +
+                   self._Y_sec[1] ** ((self._eta - 1) / self._eta) +
+                   self._Y_sec[2] ** ((self._eta - 1) / self._eta)) ** (self._eta / (self._eta - 1))
 
     def _calc_alpha_sec_occ(self):
         self._alpha_sec_occ = np.zeros((3, 3))
@@ -45,6 +47,13 @@ class SSBuilder:
                     self._N_sec_occ[i][0] ** (1 - self._sigma_sec[i]) * self._w_occ[0] +
                     self._N_sec_occ[i][1] ** (1 - self._sigma_sec[i]) * self._w_occ[1] +
                     self._N_sec_occ[i][2] ** (1 - self._sigma_sec[i]) * self._w_occ[2])
+
+    def _calc_p_sec(self):
+        self._p_sec = [(self._Y / self._Y_sec[i]) ** (1 / self._eta) * self._p for i in range(3)]
+
+    def _recalc_N_sec_occ_by_labor_demand_calculation(self):
+        self._N_sec_occ = LaborDemandCalculation(self._alpha_sec_occ, self._sigma_sec, self._p_sec, self._Y_sec,
+                                                 self._nu_sec, self._w_occ).out()
 
     def _calc_L_sec(self):
         self._L_sec = [0, 0, 0]
@@ -63,113 +72,137 @@ class SSBuilder:
                     self._w_occ[2] * self._N_sec_occ[i][2] ** (1 - self._sigma_sec[i]) / self._alpha_sec_occ[i][2])
         self._K_sec = K_sec
 
-    def _calc_N_hh_occ(self):
-        self._N_hh_occ = [income_labour_supply(self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
+    def _calc_mc(self):
+        self._mc_sec = [(self._r * self._Q_sec[i] + self._delta) * self._K_sec[i] / self._nu_sec[i] / self._Y_sec[i]
+                        for i in range(3)]
+        self._mc = sum(self._mc_sec)
 
-    def hank_ss(self,
-                amax=4000,
-                Bg=2.8 / 2,
-                Bh=1.04 / 2,
-                bmax=50,
-                chi0=0.25,
-                chi1_guess=6.5,
-                chi2=2,
-                delta=0.02,
-                eis=0.5,
-                epsI=4,
-                frisch=1,
-                G=0.2 / 2,
-                kappap=0.1,
-                kappaw=0.1,
-                kmax=1,
-                muw=1.1,
-                nA=70,
-                nB=50,
-                nK=50,
-                nZ=3,
-                omega=0.005,
-                phi=1.5,
-                r=0.0125,
-                rho_z=0.966,
-                sigma_z=0.92,
-                tot_wealth=14,
-                vphi_guess=2.07,
-                beta_guess=0.976,
-                noisy=True):
+    def _calc_N_hh_occ(self):
+        self._N_hh_occ = [income_labour_supply(self._w_occ, self._gamma_hh[i], self._m[i], self._N[i])
+                          for i in range(3)]
+
+    # residual function
+    def _res(self, x):
+        beta_loc, vphi_loc1, vphi_loc2, vphi_loc3, chi1_loc = x
+        if any((beta_loc > 0.999 / (1 + self._r),
+                vphi_loc1 < 0.001,
+                vphi_loc2 < 0.001,
+                vphi_loc3 < 0.001,
+                chi1_loc < 0.5)):
+            raise ValueError("Clearly invalid inputs")
+
+        out = [{}] * 3
+
+        for i in range(3):
+            out[i] = household_inc1.ss(Va1=self._Va[i], Vb1=self._Vb[i], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid, N = self._N[i],
+                                 tax=self._tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
+                                 eis=self._eis, rb=self._rb, ra=self._ra, chi0=self._chi0, chi1=self._chi1_loc, chi2=self._chi2, gamma = self._gamma_hh[i], m = self._m[i])
+
+        asset_mkt = out[0]["A1"] + out[1]["A2"] + out[2]["A3"] + out[0]["B1"] + out[1]["B2"] + out[2]["B3"] - self._equity_price - self._Bg
+
+        intratemp_hh = [vphi_loc1 * (self._labor_hours_hh[i][i] / self._m[i] / self._gamma_hh[i][i]) ** (1/self._frisch) -
+                        self._muw * (1 - self._tax) * self._w_occ[i] * out[i][f"U{i+1}"] * self._gamma_hh[i][i] * self._m[i]
+                        for i in range(3)]
+
+        return np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B1'] + out[1]['B2'] + out[2]['B3'] - self._Bh])
+
+    def __init__(self,
+                 amax=4000,
+                 Bg=2.8 / 2,
+                 Bh=1.04 / 2,
+                 bmax=50,
+                 chi0=0.25,
+                 chi1_guess=6.5,
+                 chi2=2,
+                 delta=0.02,
+                 eis=0.5,
+                 epsI=4,
+                 frisch=1,
+                 G=0.2 / 2,
+                 kappap=0.1,
+                 kappaw=0.1,
+                 kmax=1,
+                 muw=1.1,
+                 nA=70,
+                 nB=50,
+                 nK=50,
+                 nZ=3,
+                 omega=0.005,
+                 phi=1.5,
+                 r=0.0125,
+                 rho_z=0.966,
+                 sigma_z=0.92,
+                 tot_wealth=14,
+                 vphi_guess=2.07,
+                 beta_guess=0.976):
+        self._amax = amax
+        self._beta_guess = beta_guess
+        self._Bg = Bg
+        self._Bh = Bh
+        self._bmax = bmax
+        self._chi0 = chi0
+        self._chi1_guess = chi1_guess
+        self._chi2 = chi2
+        self._delta = delta
+        self._eis = eis
+        self._epsI = epsI
+        self._frisch = frisch
+        self._G = G
+        self._kappap = kappap
+        self._kappaw = kappaw
+        self._kmax = kmax
+        self._m = [0.33, 0.33, 0.33]
+        self._mup = 6.3863129
+        self._muw = muw
+        self._N = [0.33, 0.33, 0.33]
+        self._nA = nA
+        self._nB = nB
+        self._nK = nK
+        self._nu_sec = [0.425027757883072, 0.538959443569183, 0.273549377918243]
+        self._nZ = nZ
+        self._omega = omega
+        self._p = 1
+        self._phi = phi
+        self._Q = 1
+        self._Q_sec = [1, 1, 1]
+        self._r = r
+        self._rho_z = rho_z
+        self._sigma_sec = [0.2, 0.2, 0.2]
+        self._sigma_z = sigma_z
+        self._tot_wealth = tot_wealth
+        self._vphi_guess = vphi_guess
+        self._w_occ = [1.1, 2.044502, 1.663125]
+        self._Y_sec = [0.260986566543579, 0.343330949544907, 0.398539662361145]
+
+        self._set_up_gamma_hh()
+        self._set_up_N_sec_occ()
+
+    def hank_ss(self, noisy=True):
         """
         Solve steady state of full GE model.
         Calibrate (beta, vphi, chi1, alpha, mup, Z) to hit targets for (r, tot_wealth, Bh, K, Y=N=1).
         """
 
-        self._amax = amax
-        self._bmax = bmax
-        self._kmax = kmax
-        self._nA = nA
-        self._nB = nB
-        self._nK = nK
-        self._nZ = nZ
-        self._rho_z = rho_z
-        self._sigma_z = sigma_z
-        self._r = r
-
-
         self._calc_grid()
-
-        # solve analytically what we can
-        mup = 6.3863129
-        # mup = 1.009861
-        # mup = 1.00648
-        # mup = 1.015
-        # mup = 1.00985
-        # mup = 1.5 # to get A + B = 14Y
-
-        self._set_up_gamma_hh()
-
-        p = 1
-
-        # w_occ1 = 1
-        # w_occ2 = 1.944502
-        # w_occ3 = 1.563125
-
-        self._w_occ     = [1.1, 2.044502, 1.663125]
-        self._sigma_sec = [0.2, 0.2, 0.2]
-
-        eta = (1 - mup) / mup
-
-        # new values will be here
-        Y_sec = [0.260986566543579, 0.343330949544907, 0.398539662361145]
-        Y = (Y_sec[0] ** ((eta - 1) / eta) + Y_sec[1] ** ((eta - 1) / eta) + Y_sec[2] ** ((eta - 1) / eta)) ** (eta / (eta - 1))
-
-        self._set_up_nu_sec()
-        self._set_up_Q_sec()
-        self._set_up_N_sec_occ()
+        self._calc_eta()
+        self._calc_Y()
         self._calc_alpha_sec_occ()
-
-        p_sec = [ (Y / Y_sec[i]) ** (1 / eta) * p for i in range(3)]
-
-        self._N_sec_occ = LaborDemandCalculation(self._alpha_sec_occ, self._sigma_sec, p_sec, Y_sec, self._nu_sec, self._w_occ).out()
-
+        self._calc_p_sec()
+        self._recalc_N_sec_occ_by_labor_demand_calculation()
         self._calc_L_sec()
         self._calc_K_sec()
+        self._calc_mc()
 
-
-        mc_sec = [ (r * self._Q_sec[i] + delta) * self._K_sec[i] / self._nu_sec[i] / Y_sec[i] for i in range(3)]
-        mc = sum(mc_sec)
-
-        self._m = [0.33, 0.33, 0.33]
-
-        Q = 1
-
-        ra = r
-        rb = r - omega
+        ra = self._r
+        rb = self._r - self._omega
 
         K = sum(self._K_sec)
 
-        I_sec = [delta * self._K_sec[i] for i in range(3)]
+        I_sec = [self._delta * self._K_sec[i] for i in range(3)]
 
-        I = delta * K
+        I = self._delta * K
 
-        productivity_sec = [Y_sec[i] * self._K_sec[i] ** (-self._nu_sec[i]) * self._L_sec[i] ** (self._nu_sec[i] - 1) for i in range(3)]
+        productivity_sec = [self._Y_sec[i] * self._K_sec[i] ** (-self._nu_sec[i]) * self._L_sec[i] ** (self._nu_sec[i] - 1) for i in range(3)]
         N_sec = [sum(self._N_sec_occ[i]) for i in range(3)]
         N_occ = [self._N_sec_occ[0][i] + self._N_sec_occ[1][i] + self._N_sec_occ[2][i] for i in range(3)]
         w_sec = [(self._w_occ[0] * self._N_sec_occ[i][0] + self._w_occ[1] * self._N_sec_occ[i][1] + self._w_occ[2] * self._N_sec_occ[i][2]) / N_sec[i] for i in range(3)]
@@ -177,30 +210,25 @@ class SSBuilder:
 
         w = (w_sec[0] * N_sec[0] + w_sec[1] * N_sec[1] + w_sec[2] * N_sec[2]) / N_sum
 
-        tax = (r * Bg + G) / w / N_sum
-        div = p * Y - w * N_sum - I
-        equity_price = div / r
-        pshare = equity_price / (tot_wealth - Bh)
+        self._tax = (self._r * self._Bg + self._G) / w / N_sum
+        div = self._p * Y - w * N_sum - I
+        equity_price = div / self._r
+        pshare = equity_price / (self._tot_wealth - self._Bh)
 
-        self._N = [0.33, 0.33, 0.33]
+
 
         self._calc_N_hh_occ()
 
-        z_grid = [income_grid(self._e_grid, tax, self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
+        z_grid = [income_grid(self._e_grid, self._tax, self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
 
-        Va = [None] * 3
-        Vb = [None] * 3
+        self._Va = [None] * 3
+        self._Vb = [None] * 3
 
         for i in range(3):
-            Va[i] = (0.6 + 1.1 * self._b_grid[:, np.newaxis] + self._a_grid) ** (-1 / eis) * np.ones((z_grid[i].shape[0], 1, 1))
-            Vb[i] = (0.5 + self._b_grid[:, np.newaxis] + 1.2 * self._a_grid) ** (-1 / eis) * np.ones((z_grid[i].shape[0], 1, 1))
+            self._Va[i] = (0.6 + 1.1 * self._b_grid[:, np.newaxis] + self._a_grid) ** (-1 / self._eis) * np.ones((z_grid[i].shape[0], 1, 1))
+            self._Vb[i] = (0.5 + self._b_grid[:, np.newaxis] + 1.2 * self._a_grid) ** (-1 / self._eis) * np.ones((z_grid[i].shape[0], 1, 1))
 
-        labor_hours_hh = [self._N_hh_occ[i] for i in range(3)]
-
-
-        labor_hours1 = labor_hours_hh[0][0]
-        labor_hours2 = labor_hours_hh[1][1]
-        labor_hours3 = labor_hours_hh[2][2]
+        self._labor_hours_hh = [self._N_hh_occ[i] for i in range(3)]
 
         '''
         mc_sec1 = w_sec1 * (N_sec_occ11 + N_sec_occ12 + N_sec_occ13) / (1 - nu_sec1) / Y_sec1
@@ -209,56 +237,27 @@ class SSBuilder:
         mc = mc_sec1 + mc_sec2 + mc_sec3
         '''
 
-        div_sec = [Y_sec[i] * p_sec[i] - w_sec[i] * N_sec[i] - I_sec[i] for i in range(3)]
+        div_sec = [self._Y_sec[i] * self._p_sec[i] - w_sec[i] * N_sec[i] - I_sec[i] for i in range(3)]
 
         #err5 = div - div_sec1 - div_sec2 - div_sec3
 
         equity_price_sec = [div_sec[i] / r for i in range(3)]
 
         # other things of interest
-        pshare_sec = [equity_price_sec[i] / (tot_wealth - Bh) for i in range(3)]
-
-
-        # residual function
-        def res(x):
-            beta_loc, vphi_loc1, vphi_loc2, vphi_loc3, chi1_loc = x
-            if beta_loc > 0.999 / (1 + r) or vphi_loc1 < 0.001 or vphi_loc2 < 0.001 or vphi_loc3 < 0.001 or chi1_loc < 0.5:
-                raise ValueError('Clearly invalid inputs')
-
-            out1 = household_inc1.ss(Va1=Va[0], Vb1=Vb[0], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid, N = self._N[0],
-                                     tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
-                                     eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[0], m = self._m[0])
-
-            out2 = household_inc2.ss(Va2=Va[1], Vb2=Vb[1], Pi=self._Pi, a2_grid=self._a_grid, b2_grid=self._b_grid, N = self._N[1],
-                                     tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
-                                     eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[1], m = self._m[1])
-
-            out3 = household_inc3.ss(Va3=Va[2], Vb3=Vb[2], Pi=self._Pi, a3_grid=self._a_grid, b3_grid=self._b_grid, N = self._N[2],
-                                     tax=tax, w=self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
-                                     eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[2], m = self._m[2])
-
-            asset_mkt = out1['A1'] + out2['A2'] + out3['A3'] + out1['B1'] + out2['B2'] + out3['B3'] - equity_price - Bg
-            intratemp_hh1 = vphi_loc1 * (labor_hours1 / self._m[0] / self._gamma_hh[0][0]) ** (1/frisch) - muw * (1 - tax) * self._w_occ[0] * out1['U1'] * self._gamma_hh[0][0] * self._m[0]  # comment: changed (multiplied by gamma and m)
-            intratemp_hh2 = vphi_loc2 * (labor_hours2 / self._m[1] / self._gamma_hh[1][1]) ** (1/frisch) - muw * (1 - tax) * self._w_occ[1] * out2['U2'] * self._gamma_hh[1][1] * self._m[1]  # comment: changed (multiplied by gamma and m)
-            intratemp_hh3 = vphi_loc3 * (labor_hours3 / self._m[2] / self._gamma_hh[2][2]) ** (1/frisch) - muw * (1 - tax) * self._w_occ[2] * out3['U3'] * self._gamma_hh[2][2] * self._m[2]  # comment: changed (multiplied by gamma and m)
-
-            #labor_mk1 = N_occ1 - labor_hours1 * (occupation1 == 0) - labor_hours2 * (occupation2 == 0) - labor_hours3 * (occupation3 == 0)
-            #labor_mk2 = N_occ2 - labor_hours1 * (occupation1 == 1) - labor_hours2 * (occupation2 == 1) - labor_hours3 * (occupation3 == 1)
-            #labor_mk3 = N_occ3 - labor_hours1 * (occupation1 == 2) - labor_hours2 * (occupation2 == 2) - labor_hours3 * (occupation3 == 3)
-
-
-            return np.array([asset_mkt, intratemp_hh1, intratemp_hh2, intratemp_hh3, out1['B1'] + out2['B2'] + out3['B3'] - Bh])
+        pshare_sec = [equity_price_sec[i] / (self._tot_wealth - self._Bh) for i in range(3)]
 
         # solve for beta, vphi, omega
-        (beta, vphi1, vphi2, vphi3, chi1), _ = utils.broyden_solver(res, np.array([beta_guess,
-                                                                                   vphi_guess,
-                                                                                   vphi_guess,
-                                                                                   vphi_guess,
-                                                                                   chi1_guess]), noisy=noisy)
+        (beta, vphi1, vphi2, vphi3, chi1), _ = utils.broyden_solver(self._res,
+                                                                    np.array([self._beta_guess,
+                                                                              self._vphi_guess,
+                                                                              self._vphi_guess,
+                                                                              self._vphi_guess,
+                                                                              self._chi1_guess]),
+                                                                    noisy=noisy)
 
         labor_mk = [None, None, None]
         for i in range(3):
-            labor_mk[i] = N_occ[i] - labor_hours1 * (0 == i) - labor_hours2 * (1 == i) - labor_hours3 * (2 == i)
+            labor_mk[i] = N_occ[i] - labor_hours[0][0] * (0 == i) - labor_hours[1][1] * (1 == i) - labor_hours[2][2] * (2 == i)
 
         # extra evaluation to report variables
         ss1 = household_inc1.ss(Va1=Va[0], Vb1=Vb[0], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid,
@@ -286,7 +285,7 @@ class SSBuilder:
 
         ss = ss1
 
-        ss.update({'pi': 0, 'piw': 0, 'Q': Q, 'Y': Y, 'mc': mc, 'K': K, 'I': I, 'tax': tax,
+        ss.update({'pi': 0, 'piw': 0, 'Q': Q, 'Y': Y, 'mc': mc, 'K': K, 'I': I, 'tax': self._tax,
                    'r': r, 'Bg': Bg, 'G': G, 'Chi': Chi1 + Chi2 + Chi3, 'chi': chi_hh1 + chi_hh2 + chi_hh3, 'phi': phi,
                    'beta': beta, 'vphi': (vphi1 * vphi2 * vphi3) ** (1 / 3), 'omega': omega, 'delta': delta, 'muw': muw,
                    'frisch': frisch, 'epsI': epsI, 'a_grid': self._a_grid, 'b_grid': self._b_grid,
