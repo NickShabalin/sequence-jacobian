@@ -4,13 +4,13 @@ import numpy as np
 
 import utils
 from ._households import household1, household2, household3
-from ._incomes import income1, income
+from ._income import income_labour_supply, income_grid
 from ._labor_demand_calculation import LaborDemandCalculation
 from ._misc import Psi_fun
 
-household_inc1 = household1.attach_hetinput(income)
-household_inc2 = household2.attach_hetinput(income)
-household_inc3 = household3.attach_hetinput(income)
+household_inc1 = household1.attach_hetinput(income_grid)
+household_inc2 = household2.attach_hetinput(income_grid)
+household_inc3 = household3.attach_hetinput(income_grid)
 
 
 # noinspection PyPep8Naming
@@ -64,7 +64,7 @@ class SSBuilder:
         self._K_sec = K_sec
 
     def _calc_N_hh_occ(self):
-        self._N_hh_occ = [income1(self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
+        self._N_hh_occ = [income_labour_supply(self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
 
     def hank_ss(self,
                 amax=4000,
@@ -186,7 +186,7 @@ class SSBuilder:
 
         self._calc_N_hh_occ()
 
-        z_grid = [income(self._e_grid, tax, self._w_occ[0], self._w_occ[1], self._w_occ[2], self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
+        z_grid = [income_grid(self._e_grid, tax, self._w_occ, self._gamma_hh[i], self._m[i], self._N[i]) for i in range(3)]
 
         Va = [None] * 3
         Vb = [None] * 3
@@ -226,15 +226,15 @@ class SSBuilder:
                 raise ValueError('Clearly invalid inputs')
 
             out1 = household_inc1.ss(Va1=Va[0], Vb1=Vb[0], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid, N = self._N[0],
-                                     tax=tax, w1 = self._w_occ[0], w2 = self._w_occ[1], w3 = self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
+                                     tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
                                      eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[0], m = self._m[0])
 
             out2 = household_inc2.ss(Va2=Va[1], Vb2=Vb[1], Pi=self._Pi, a2_grid=self._a_grid, b2_grid=self._b_grid, N = self._N[1],
-                                     tax=tax, w1 = self._w_occ[0], w2 = self._w_occ[1], w3 = self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
+                                     tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
                                      eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[1], m = self._m[1])
 
             out3 = household_inc3.ss(Va3=Va[2], Vb3=Vb[2], Pi=self._Pi, a3_grid=self._a_grid, b3_grid=self._b_grid, N = self._N[2],
-                                     tax=tax, w1=self._w_occ[0], w2=self._w_occ[1], w3=self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
+                                     tax=tax, w=self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
                                      eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = self._gamma_hh[2], m = self._m[2])
 
             asset_mkt = out1['A1'] + out2['A2'] + out3['A3'] + out1['B1'] + out2['B2'] + out3['B3'] - equity_price - Bg
@@ -262,14 +262,14 @@ class SSBuilder:
 
         # extra evaluation to report variables
         ss1 = household_inc1.ss(Va1=Va[0], Vb1=Vb[0], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid,
-                                tax=tax, w1 = self._w_occ[0], w2 = self._w_occ[1], w3 = self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
+                                tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = self._gamma_hh[0], m = self._m[0], N = self._N[0])
         ss2 = household_inc2.ss(Va2=Va[1], Vb2=Vb[1], Pi=self._Pi, a2_grid=self._a_grid, b2_grid=self._b_grid,
-                                tax=tax, w1 = self._w_occ[0], w2 = self._w_occ[1], w3 = self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
+                                tax=tax, w = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = self._gamma_hh[1], m = self._m[1], N = self._N[1])
 
         ss3 = household_inc3.ss(Va3=Va[2], Vb3=Vb[2], Pi=self._Pi, a3_grid=self._a_grid, b3_grid=self._b_grid,
-                                tax=tax, w1=self._w_occ[0], w2=self._w_occ[1], w3=self._w_occ[2], e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
+                                tax=tax, w=self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = self._gamma_hh[2], m = self._m[2], N = self._N[2])
 
 
@@ -313,6 +313,7 @@ class SSBuilder:
                    'gamma_hh_1_1': self._gamma_hh[0][0], 'gamma_hh_1_2': self._gamma_hh[0][1], 'gamma_hh_1_3': self._gamma_hh[0][2],
                    'gamma_hh_2_1': self._gamma_hh[1][0], 'gamma_hh_2_2': self._gamma_hh[1][1], 'gamma_hh_2_3': self._gamma_hh[1][2],
                    'gamma_hh_3_1': self._gamma_hh[2][0], 'gamma_hh_3_2': self._gamma_hh[2][1], 'gamma_hh_3_3': self._gamma_hh[2][2],
+                   "w1": self._w_occ[0],"w2": self._w_occ[1],"w3": self._w_occ[2],
                    'w_occ_1': self._w_occ[0], 'w_occ_2': self._w_occ[1], 'w_occ_3': self._w_occ[2],
                    'w_sec_1': w_sec[0], 'w_sec_2': w_sec[1], 'w_sec_3': w_sec[2],
                    'I_sec_1': I_sec[0], 'I_sec_2': I_sec[1], 'I_sec_3': I_sec[2],

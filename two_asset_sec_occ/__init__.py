@@ -1,1 +1,1 @@
-from ._hank_ss import hank_ss
+from ._hank_ss import SSBuilder
