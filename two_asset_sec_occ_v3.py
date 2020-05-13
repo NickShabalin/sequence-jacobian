@@ -748,7 +748,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'N_occ_sec_1_1': N_sec_occ11, 'N_occ_sec_1_2': N_sec_occ21, 'N_occ_sec_1_3': N_sec_occ31,
                'N_occ_sec_2_1': N_sec_occ12, 'N_occ_sec_2_2': N_sec_occ22, 'N_occ_sec_2_3': N_sec_occ32,
                'N_occ_sec_3_1': N_sec_occ13, 'N_occ_sec_3_2': N_sec_occ23, 'N_occ_sec_3_3': N_sec_occ33,
-               'equity_price_sec1': equity_price_sec1, 'equity_price_sec2': equity_price_sec2, 'equity_price_sec3': equity_price_sec3,
+
                'sigma_sec_1': sigma_sec1, 'sigma_sec_2': sigma_sec2, 'sigma_sec_3': sigma_sec3,
                'psip_sec_1': 0, 'psip_sec_2': 0, 'psip_sec_3': 0, 'psip': 0,
                "mc_sec_1": mc_sec1, "mc_sec_2": mc_sec2, "mc_sec_3": mc_sec3,

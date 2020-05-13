@@ -278,6 +278,17 @@ def income3(w_occ_1, w_occ_2, w_occ_3, gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3,
 
 ss = two_asset_sec_occ_v3.hank_ss()
 
+# DEBUG TODO: Delete this after refactoring
+# import two_asset_sec_occ
+# ss_1 = two_asset_sec_occ.hank_ss()
+#
+# for k, v in ss.items():
+#     print(k)
+#     if isinstance(v, np.ndarray):
+#         assert np.array_equal(ss[k], ss_1[k])
+#     else:
+#         assert ss[k] == ss_1[k]
+
 T = 300
 block_list = [consumers_aggregator, two_asset_sec_occ_v3.household_inc1, two_asset_sec_occ_v3.household_inc2, two_asset_sec_occ_v3.household_inc3,
                 taylor, fiscal, finance, mkt_clearing, production, income1, income2, income3]
