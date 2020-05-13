@@ -288,108 +288,61 @@ def step6(ap_endo, c_endo, z_grid, b_grid, a_grid, ra, rb, chi0, chi1, chi2):
 
 '''Part 2: Simple blocks'''
 
-def income1(w_occ_1, w_occ_2, w_occ_3, gamma_hh_1, m1, N = 0.33):
-
-    gamma_occ1 = gamma_hh_1[0]
-    gamma_occ2 = gamma_hh_1[1]
-    gamma_occ3 = gamma_hh_1[2]
-
-    N_occ1 = N * m1 * gamma_occ1
-    N_occ2 = N * m1 * gamma_occ2
-    N_occ3 = N * m1 * gamma_occ3
-
-
-    choice1 = N_occ1 * w_occ_1
-    choice2 = N_occ2 * w_occ_2
-    choice3 = N_occ3 * w_occ_3
-    choices = [choice1, choice2, choice3]
-
-    occupation = choices.index(max(choices))
-
-    N_hh_occ_1_1 = (occupation == 0) * N
-    N_hh_occ_1_2 = (occupation == 1) * N
-    N_hh_occ_1_3 = (occupation == 2) * N
+def income1(N = 0.33):
+    N_hh_occ_1_1 = N
+    N_hh_occ_1_2 = 0
+    N_hh_occ_1_3 = 0
 
     return N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3
 
-
-def income2(w_occ_1, w_occ_2, w_occ_3, gamma_hh_2, m2, N = 0.33):
-
-    gamma_occ1 = gamma_hh_2[0]
-    gamma_occ2 = gamma_hh_2[1]
-    gamma_occ3 = gamma_hh_2[2]
-
-    N_occ1 = N * m2 * gamma_occ1
-    N_occ2 = N * m2 * gamma_occ2
-    N_occ3 = N * m2 * gamma_occ3
-
-
-    choice1 = N_occ1 * w_occ_1
-    choice2 = N_occ2 * w_occ_2
-    choice3 = N_occ3 * w_occ_3
-    choices = [choice1, choice2, choice3]
-
-    occupation = choices.index(max(choices))
-
-    N_hh_occ_2_1 = (occupation == 0) * N
-    N_hh_occ_2_2 = (occupation == 1) * N
-    N_hh_occ_2_3 = (occupation == 2) * N
+def income2(N = 0.33):
+    N_hh_occ_2_1 = 0
+    N_hh_occ_2_2 = N
+    N_hh_occ_2_3 = 0
 
     return N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3
 
-
-def income3(w_occ_1, w_occ_2, w_occ_3, gamma_hh_3, m3, N = 0.33):
-
-    gamma_occ1 = gamma_hh_3[0]
-    gamma_occ2 = gamma_hh_3[1]
-    gamma_occ3 = gamma_hh_3[2]
-
-    N_occ1 = N * m3 * gamma_occ1
-    N_occ2 = N * m3 * gamma_occ2
-    N_occ3 = N * m3 * gamma_occ3
-
-
-    choice1 = N_occ1 * w_occ_1
-    choice2 = N_occ2 * w_occ_2
-    choice3 = N_occ3 * w_occ_3
-    choices = [choice1, choice2, choice3]
-
-    occupation = choices.index(max(choices))
-
-    N_hh_occ_3_1 = (occupation == 0) * N
-    N_hh_occ_3_2 = (occupation == 1) * N
-    N_hh_occ_3_3 = (occupation == 2) * N
-
+def income3(N = 0.33):
+    N_hh_occ_3_1 = 0
+    N_hh_occ_3_2 = 0
+    N_hh_occ_3_3 = N
 
     return N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3
 
 
-def income(e_grid, tax, w1, w2, w3, gamma, m, N):
+def income_hh_1(e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_1_1, gamma_hh_1_2, gamma_hh_1_3,
+                m1, N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3):
+    N_hh_1 = [N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3]
+    occupation = N_hh_1.index(max(N_hh_1))
+    gamma_hh_1 = [gamma_hh_1_1, gamma_hh_1_2, gamma_hh_1_3]
+    w_occ = [w_occ_1, w_occ_2, w_occ_3]
+    z_grid = (1 - tax) * e_grid * m1 * gamma_hh_1[occupation] * w_occ[occupation] * N_hh_1[occupation]
+    return z_grid
 
-    gamma_occ1 = gamma[0]
-    gamma_occ2 = gamma[1]
-    gamma_occ3 = gamma[2]
+def income_hh_2(e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_2_1, gamma_hh_2_2, gamma_hh_2_3,
+                m2, N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3):
+    N_hh_1 = [N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3]
+    occupation = N_hh_1.index(max(N_hh_1))
+    gamma_hh_1 = [gamma_hh_2_1, gamma_hh_2_2, gamma_hh_2_3]
+    w_occ = [w_occ_1, w_occ_2, w_occ_3]
+    z_grid = (1 - tax) * e_grid * m2 * gamma_hh_1[occupation] * w_occ[occupation] * N_hh_1[occupation]
+    return z_grid
 
-    N_occ1 = N * m * gamma_occ1
-    N_occ2 = N * m * gamma_occ2
-    N_occ3 = N * m * gamma_occ3
-
-
-    choice1 = N_occ1 * w1
-    choice2 = N_occ2 * w2
-    choice3 = N_occ3 * w3
-    choices = [choice1, choice2, choice3]
-
-    z_grid = (1 - tax) * e_grid * max(choices)
-
+def income_hh_3(e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3,
+                m3, N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3):
+    N_hh_1 = [N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3]
+    occupation = N_hh_1.index(max(N_hh_1))
+    gamma_hh_1 = [gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3]
+    w_occ = [w_occ_1, w_occ_2, w_occ_3]
+    z_grid = (1 - tax) * e_grid * m3 * gamma_hh_1[occupation] * w_occ[occupation] * N_hh_1[occupation]
     return z_grid
 
 
 
 # comment: two different types of hh instead of one
-household_inc1 = household1.attach_hetinput(income)
-household_inc2 = household2.attach_hetinput(income)
-household_inc3 = household3.attach_hetinput(income)
+household_inc1 = household1.attach_hetinput(income_hh_1)
+household_inc2 = household2.attach_hetinput(income_hh_2)
+household_inc3 = household3.attach_hetinput(income_hh_3)
 
 '''Part 3: Steady state'''
 
@@ -440,9 +393,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     w_occ3 = 1.563125
     '''
 
-    w_occ1 = 0.35
+    w_occ1 = 0.5
     w_occ2 = 1.5
-    w_occ3 = 0.7
+    w_occ3 = 1
 
     sigma_sec1 = sigma_sec2 = sigma_sec3 = 0.2
 
@@ -594,13 +547,13 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
     N1 = N2 = N3 = 0.33
 
-    N_hh_occ11, N_hh_occ12, N_hh_occ13 = income1(w_occ1, w_occ2, w_occ3, gamma_hh1, m1, N1)
-    N_hh_occ21, N_hh_occ22, N_hh_occ23 = income2(w_occ1, w_occ2, w_occ3, gamma_hh2, m2, N2)
-    N_hh_occ31, N_hh_occ32, N_hh_occ33 = income3(w_occ1, w_occ2, w_occ3, gamma_hh3, m3, N3)
+    N_hh_occ11, N_hh_occ12, N_hh_occ13 = income1(N1)
+    N_hh_occ21, N_hh_occ22, N_hh_occ23 = income2(N2)
+    N_hh_occ31, N_hh_occ32, N_hh_occ33 = income3(N3)
 
-    z1_grid = income(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh1, m1, N1)
-    z2_grid = income(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh2, m2, N2)
-    z3_grid = income(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh3, m3, N3)
+    z1_grid = income_hh_1(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13, m1, N_hh_occ11, N_hh_occ12, N_hh_occ13)
+    z2_grid = income_hh_2(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh_occ21, gamma_hh_occ22, gamma_hh_occ23, m2, N_hh_occ21, N_hh_occ22, N_hh_occ23)
+    z3_grid = income_hh_3(e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33, m3, N_hh_occ31, N_hh_occ32, N_hh_occ33)
 
     Va1 = (0.6 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
     Vb1 = (0.5 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
@@ -657,17 +610,20 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
         beta_loc, vphi_loc1, vphi_loc2, vphi_loc3, chi1_loc = x
         if beta_loc > 0.999 / (1 + r) or vphi_loc1 < 0.001 or vphi_loc2 < 0.001 or vphi_loc3 < 0.001 or chi1_loc < 0.5:
             raise ValueError('Clearly invalid inputs')
-        out1 = household_inc1.ss(Va1=Va1, Vb1=Vb1, Pi=Pi, a1_grid=a_grid, b1_grid=b_grid, N = N1,
-                                 tax=tax, w1 = w_occ1, w2 = w_occ2, w3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
-                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = gamma_hh1, m = m1)
+        out1 = household_inc1.ss(Va1=Va1, Vb1=Vb1, Pi=Pi, a1_grid=a_grid, b1_grid=b_grid, N_hh_occ_1_1 = N_hh_occ11, N_hh_occ_1_2 = N_hh_occ12, N_hh_occ_1_3 = N_hh_occ13,
+                                 tax=tax, w_occ_1 = w_occ1, w_occ_2 = w_occ2, w_occ_3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
+                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma_hh_1_1 = gamma_hh_occ11,
+                                 gamma_hh_1_2 = gamma_hh_occ12, gamma_hh_1_3 = gamma_hh_occ13, m1 = m1)
 
-        out2 = household_inc2.ss(Va2=Va2, Vb2=Vb2, Pi=Pi, a2_grid=a_grid, b2_grid=b_grid, N = N2,
-                                 tax=tax, w1 = w_occ1, w2 = w_occ2, w3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
-                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = gamma_hh2, m = m2)
+        out2 = household_inc2.ss(Va2=Va2, Vb2=Vb2, Pi=Pi, a2_grid=a_grid, b2_grid=b_grid, N_hh_occ_2_1 = N_hh_occ21, N_hh_occ_2_2 = N_hh_occ22, N_hh_occ_2_3 = N_hh_occ23,
+                                 tax=tax, w_occ_1 = w_occ1, w_occ_2 = w_occ2, w_occ_3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
+                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma_hh_2_1 = gamma_hh_occ21,
+                                 gamma_hh_2_2 = gamma_hh_occ22, gamma_hh_2_3 = gamma_hh_occ23, m2 = m2)
 
-        out3 = household_inc3.ss(Va3=Va3, Vb3=Vb3, Pi=Pi, a3_grid=a_grid, b3_grid=b_grid, N = N3,
-                                 tax=tax, w1=w_occ1, w2=w_occ2, w3=w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
-                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = gamma_hh3, m = m3)
+        out3 = household_inc3.ss(Va3=Va3, Vb3=Vb3, Pi=Pi, a3_grid=a_grid, b3_grid=b_grid, N_hh_occ_3_1 = N_hh_occ31, N_hh_occ_3_2 = N_hh_occ32, N_hh_occ_3_3 = N_hh_occ33,
+                                 tax=tax, w_occ_1=w_occ1, w_occ_2=w_occ2, w_occ_3=w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta_loc,
+                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma_hh_3_1 = gamma_hh_occ31,
+                                 gamma_hh_3_2 = gamma_hh_occ32, gamma_hh_3_3 = gamma_hh_occ33, m3 = m3)
 
         asset_mkt = out1['A1'] + out2['A2'] + out3['A3'] + out1['B1'] + out2['B2'] + out3['B3'] - equity_price - Bg
         intratemp_hh1 = vphi_loc1 * (labor_hours1 / m1 / gamma_hh1[occupation1]) ** (1/frisch) - (1 - tax) * wage1 * out1['U1'] * gamma_hh1[occupation1] * m1  # comment: changed (multiplied by gamma and m)
@@ -692,15 +648,22 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
     # extra evaluation to report variables
     ss1 = household_inc1.ss(Va1=Va1, Vb1=Vb1, Pi=Pi, a1_grid=a_grid, b1_grid=b_grid,
-                                 tax=tax, w1 = w_occ1, w2 = w_occ2, w3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
-                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = gamma_hh1, m = m1, N = N1)
+                                 tax=tax, w_occ_1 = w_occ1, w_occ_2 = w_occ2, w_occ_3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
+                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, m1 = m1,
+                                 N_hh_occ_1_1 = N_hh_occ11, N_hh_occ_1_2 = N_hh_occ12, N_hh_occ_1_3 = N_hh_occ13,
+                                 gamma_hh_1_1=gamma_hh_occ11, gamma_hh_1_2=gamma_hh_occ12, gamma_hh_1_3=gamma_hh_occ13)
+
     ss2 = household_inc2.ss(Va2=Va2, Vb2=Vb2, Pi=Pi, a2_grid=a_grid, b2_grid=b_grid,
-                                 tax=tax, w1 = w_occ1, w2 = w_occ2, w3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
-                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = gamma_hh2, m = m2, N = N2)
+                                 tax=tax, w_occ_1 = w_occ1, w_occ_2 = w_occ2, w_occ_3 = w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
+                                 eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, m2 = m2,
+                                 gamma_hh_2_1=gamma_hh_occ21, gamma_hh_2_2=gamma_hh_occ22, gamma_hh_2_3=gamma_hh_occ23,
+                                 N_hh_occ_2_1 = N_hh_occ21, N_hh_occ_2_2 = N_hh_occ22, N_hh_occ_2_3 = N_hh_occ23)
 
     ss3 = household_inc3.ss(Va3=Va3, Vb3=Vb3, Pi=Pi, a3_grid=a_grid, b3_grid=b_grid,
-                            tax=tax, w1=w_occ1, w2=w_occ2, w3=w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
-                            eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, gamma = gamma_hh3, m = m3, N = N3)
+                            tax=tax, w_occ_1=w_occ1, w_occ_2=w_occ2, w_occ_3=w_occ3, e_grid=e_grid, k_grid=k_grid, beta=beta,
+                            eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1, chi2=chi2, m3 = m3,
+                            N_hh_occ_3_1 = N_hh_occ31, N_hh_occ_3_2 = N_hh_occ32, N_hh_occ_3_3 = N_hh_occ33,
+                            gamma_hh_3_1=gamma_hh_occ31, gamma_hh_3_2=gamma_hh_occ32, gamma_hh_3_3=gamma_hh_occ33)
 
 
 
@@ -722,7 +685,8 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'beta': beta, 'vphi_1': vphi1, 'vphi_2': vphi2, 'vphi_3': vphi3, 'omega': omega, 'delta': delta, 'muw': muw,
                'frisch': frisch, 'epsI': epsI, 'a_grid': a_grid, 'b_grid': b_grid, 'z_grid': z1_grid + z2_grid + z3_grid, 'e_grid': e_grid,
                'k_grid': k_grid, 'Pi': Pi, 'kappap': kappap, 'kappaw': kappaw, 'rstar': r, 'i': r, 'w': w,
-               'p': p, 'mup': mup, 'eta': eta, 'ra': ra, 'rb': rb,
+               'p': p, 'mup': mup, 'eta': eta, 'ra': ra, 'rb': rb, 'beta_sir': 1.5, 'gamma_sir': 1, 'covid_shock': 0,
+               'susceptible': 1, 'infected': 0, 'recovered': 0,
 
                 'C': ss1['C1'] + ss2['C2'] + ss3['C3'], 'A': ss1['A1'] + ss2['A2'] + ss3['A3'], 'B': ss1['B1'] + ss2['B2'] + ss3['B3'], 'U': ss1['U1'] + ss2['U2'] + ss3['U3'],
 
@@ -748,7 +712,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'N_occ_sec_1_1': N_sec_occ11, 'N_occ_sec_1_2': N_sec_occ21, 'N_occ_sec_1_3': N_sec_occ31,
                'N_occ_sec_2_1': N_sec_occ12, 'N_occ_sec_2_2': N_sec_occ22, 'N_occ_sec_2_3': N_sec_occ32,
                'N_occ_sec_3_1': N_sec_occ13, 'N_occ_sec_3_2': N_sec_occ23, 'N_occ_sec_3_3': N_sec_occ33,
-
+               'equity_price_sec1': equity_price_sec1, 'equity_price_sec2': equity_price_sec2, 'equity_price_sec3': equity_price_sec3,
                'sigma_sec_1': sigma_sec1, 'sigma_sec_2': sigma_sec2, 'sigma_sec_3': sigma_sec3,
                'psip_sec_1': 0, 'psip_sec_2': 0, 'psip_sec_3': 0, 'psip': 0,
                "mc_sec_1": mc_sec1, "mc_sec_2": mc_sec2, "mc_sec_3": mc_sec3,
@@ -771,5 +735,3 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
                })
     return ss
-
-ss = hank_ss()
