@@ -4,11 +4,21 @@ from numba import njit
 import asymptotic
 import utils
 
+from vectorized_function_builder import VectorizedFunctionBuilder
+
 '''Part 1: SimpleBlock class and @simple decorator to generate it'''
 
 
 def simple(f):
     return SimpleBlock(f)
+
+
+def simple_with_vector_args(vector_arguments: dict):
+    def decorator(f):
+        builder = VectorizedFunctionBuilder(vector_arguments, f)
+        builder.build()
+        return SimpleBlock(builder.new_func, input_list=builder.new_input_list, output_list=builder.new_output_list)
+    return decorator
 
 
 class SimpleBlock:
