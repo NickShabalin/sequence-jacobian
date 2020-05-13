@@ -306,9 +306,9 @@ def income1(w_occ_1, w_occ_2, w_occ_3, gamma_hh_1, m1, N = 0.33):
 
     occupation = choices.index(max(choices))
 
-    N_hh_occ_1_1 = (occupation == 0) * N_occ1
-    N_hh_occ_1_2 = (occupation == 1) * N_occ2
-    N_hh_occ_1_3 = (occupation == 2) * N_occ3
+    N_hh_occ_1_1 = (occupation == 0) * N
+    N_hh_occ_1_2 = (occupation == 1) * N
+    N_hh_occ_1_3 = (occupation == 2) * N
 
     return N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3
 
@@ -331,9 +331,9 @@ def income2(w_occ_1, w_occ_2, w_occ_3, gamma_hh_2, m2, N = 0.33):
 
     occupation = choices.index(max(choices))
 
-    N_hh_occ_2_1 = (occupation == 0) * N_occ1
-    N_hh_occ_2_2 = (occupation == 1) * N_occ2
-    N_hh_occ_2_3 = (occupation == 2) * N_occ3
+    N_hh_occ_2_1 = (occupation == 0) * N
+    N_hh_occ_2_2 = (occupation == 1) * N
+    N_hh_occ_2_3 = (occupation == 2) * N
 
     return N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3
 
@@ -356,9 +356,9 @@ def income3(w_occ_1, w_occ_2, w_occ_3, gamma_hh_3, m3, N = 0.33):
 
     occupation = choices.index(max(choices))
 
-    N_hh_occ_3_1 = (occupation == 0) * N_occ1
-    N_hh_occ_3_2 = (occupation == 1) * N_occ2
-    N_hh_occ_3_3 = (occupation == 2) * N_occ3
+    N_hh_occ_3_1 = (occupation == 0) * N
+    N_hh_occ_3_2 = (occupation == 1) * N
+    N_hh_occ_3_3 = (occupation == 2) * N
 
 
     return N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3
@@ -440,9 +440,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     w_occ3 = 1.563125
     '''
 
-    w_occ1 = 1.1
-    w_occ2 = 2.044502
-    w_occ3 = 1.663125
+    w_occ1 = 0.35
+    w_occ2 = 1.5
+    w_occ3 = 0.7
 
     sigma_sec1 = sigma_sec2 = sigma_sec3 = 0.2
 
@@ -650,7 +650,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     pshare_sec3 = equity_price_sec3 / (tot_wealth - Bh)
 
 
-
+    err20 = 1 / mup - mc
 
     # residual function
     def res(x):
@@ -670,9 +670,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                                  eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma = gamma_hh3, m = m3)
 
         asset_mkt = out1['A1'] + out2['A2'] + out3['A3'] + out1['B1'] + out2['B2'] + out3['B3'] - equity_price - Bg
-        intratemp_hh1 = vphi_loc1 * (labor_hours1 / m1 / gamma_hh1[occupation1]) ** (1/frisch) - muw * (1 - tax) * wage1 * out1['U1'] * gamma_hh1[occupation1] * m1  # comment: changed (multiplied by gamma and m)
-        intratemp_hh2 = vphi_loc2 * (labor_hours2 / m2 / gamma_hh2[occupation2]) ** (1/frisch) - muw * (1 - tax) * wage2 * out2['U2'] * gamma_hh2[occupation2] * m2  # comment: changed (multiplied by gamma and m)
-        intratemp_hh3 = vphi_loc3 * (labor_hours3 / m3 / gamma_hh3[occupation3]) ** (1/frisch) - muw * (1 - tax) * wage3 * out3['U3'] * gamma_hh3[occupation3] * m3  # comment: changed (multiplied by gamma and m)
+        intratemp_hh1 = vphi_loc1 * (labor_hours1 / m1 / gamma_hh1[occupation1]) ** (1/frisch) - (1 - tax) * wage1 * out1['U1'] * gamma_hh1[occupation1] * m1  # comment: changed (multiplied by gamma and m)
+        intratemp_hh2 = vphi_loc2 * (labor_hours2 / m2 / gamma_hh2[occupation2]) ** (1/frisch) - (1 - tax) * wage2 * out2['U2'] * gamma_hh2[occupation2] * m2  # comment: changed (multiplied by gamma and m)
+        intratemp_hh3 = vphi_loc3 * (labor_hours3 / m3 / gamma_hh3[occupation3]) ** (1/frisch) - (1 - tax) * wage3 * out3['U3'] * gamma_hh3[occupation3] * m3  # comment: changed (multiplied by gamma and m)
 
         #labor_mk1 = N_occ1 - labor_hours1 * (occupation1 == 0) - labor_hours2 * (occupation2 == 0) - labor_hours3 * (occupation3 == 0)
         #labor_mk2 = N_occ2 - labor_hours1 * (occupation1 == 1) - labor_hours2 * (occupation2 == 1) - labor_hours3 * (occupation3 == 1)
@@ -719,7 +719,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
     ss.update({'pi': 0, 'piw': 0, 'Q': Q, 'Y': Y, 'mc': mc, 'K': K, 'I': I, 'tax': tax,
                'r': r, 'Bg': Bg, 'G': G, 'Chi': Chi1 + Chi2 + Chi3, 'chi': chi_hh1 + chi_hh2 + chi_hh3, 'phi': phi,
-               'beta': beta, 'vphi': (vphi1*vphi2*vphi3) ** (1/3), 'omega': omega, 'delta': delta, 'muw': muw,
+               'beta': beta, 'vphi_1': vphi1, 'vphi_2': vphi2, 'vphi_3': vphi3, 'omega': omega, 'delta': delta, 'muw': muw,
                'frisch': frisch, 'epsI': epsI, 'a_grid': a_grid, 'b_grid': b_grid, 'z_grid': z1_grid + z2_grid + z3_grid, 'e_grid': e_grid,
                'k_grid': k_grid, 'Pi': Pi, 'kappap': kappap, 'kappaw': kappaw, 'rstar': r, 'i': r, 'w': w,
                'p': p, 'mup': mup, 'eta': eta, 'ra': ra, 'rb': rb,
@@ -771,3 +771,5 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
                })
     return ss
+
+ss = hank_ss()
