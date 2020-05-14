@@ -6,7 +6,7 @@ import jacobian as jac
 from het_block import het
 from simple_block import simple
 from solved_block import solved
-import two_asset_sec_occ_v3
+import _OBSOLETE_two_asset_sec_occ_v3
 import determinacy as det
 from simple_with_vector_args import SimpleWithVectorArgs
 
@@ -276,7 +276,7 @@ def income3(w_occ_1, w_occ_2, w_occ_3, gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3,
     return N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3
 
 
-ss = two_asset_sec_occ_v3.hank_ss()
+ss = _OBSOLETE_two_asset_sec_occ_v3.hank_ss()
 
 # DEBUG TODO: Delete this after refactoring
 # import two_asset_sec_occ
@@ -290,8 +290,8 @@ ss = two_asset_sec_occ_v3.hank_ss()
 #         assert ss[k] == ss_1[k]
 
 T = 300
-block_list = [consumers_aggregator, two_asset_sec_occ_v3.household_inc1, two_asset_sec_occ_v3.household_inc2, two_asset_sec_occ_v3.household_inc3,
-                taylor, fiscal, finance, mkt_clearing, production, income1, income2, income3]
+block_list = [consumers_aggregator, _OBSOLETE_two_asset_sec_occ_v3.household_inc1, _OBSOLETE_two_asset_sec_occ_v3.household_inc2, _OBSOLETE_two_asset_sec_occ_v3.household_inc3,
+              taylor, fiscal, finance, mkt_clearing, production, income1, income2, income3]
 exogenous = ['rstar', 'productivity_sec_1', 'productivity_sec_2', 'productivity_sec_3', 'G']
 unknowns = ['r', 'Bg', 'w_occ_1', 'w_occ_2', 'w_occ_3']
 targets = ['asset_mkt', 'fisher', 'labor_mkt_1', 'labor_mkt_2', 'labor_mkt_3']
