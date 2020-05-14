@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 import utils
 import jacobian as jac
 from het_block import het
-from simple_block import simple
+from simple_block import simple, simple_with_vector_args
 from solved_block import solved
 import two_asset_sec_occ_v4
 import determinacy as det
-from simple_with_vector_args import SimpleWithVectorArgs
 import math
 
 @simple
@@ -53,7 +52,8 @@ def mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, fri
     gamma_hh_3 = [gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3]
     w_occ = [w_occ_1, w_occ_2, w_occ_3]
     
-    covid_mult = math.exp(beta_sir * infected / (infected + susceptible + recovered))
+    #covid_mult = math.exp(beta_sir * infected / (infected + susceptible + recovered))
+    covid_mult = (beta_sir * infected / (infected + susceptible + recovered))
     #covid_mult = 1
 
     intratemp_hh_1 = covid_mult * vphi_1 * max(N_hh_occ_1) ** (1 / frisch) - (1 - tax) * w_occ[N_hh_occ_1.index(max(N_hh_occ_1))] * U1 * gamma_hh_1[N_hh_occ_1.index(max(N_hh_occ_1))] * m1
@@ -62,13 +62,13 @@ def mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, fri
 
     return asset_mkt, intratemp_hh_1, intratemp_hh_2, intratemp_hh_3
 
-@SimpleWithVectorArgs({"div_sec": 3, "equity_price_sec": 3})
+@simple_with_vector_args({"div_sec": 3, "equity_price_sec": 3})
 def arbitrage(div_sec, equity_price_sec, r):
-    equity = div_sec(+1) + equity_price_sec(+1) - equity_price_sec * (1 + r(+1))
-    #equity = div_sec + equity_price_sec - equity_price_sec(-1) * (1 + r)
+    #equity = div_sec(+1) + equity_price_sec(+1) - equity_price_sec * (1 + r(+1))
+    equity = div_sec + equity_price_sec - equity_price_sec(-1) * (1 + r)
     return equity
 
-@SimpleWithVectorArgs({"Y_sec": 3, "K_sec": 3, "w_sec": 3, "N_sec": 3, "p_sec": 3})
+@simple_with_vector_args({"Y_sec": 3, "K_sec": 3, "w_sec": 3, "N_sec": 3, "p_sec": 3})
 def dividend(Y_sec, w_sec, N_sec, K_sec, p_sec, pi, mup, kappap, delta):
     psip_sec = mup / (mup - 1) / 2 / kappap * np.log(1 + pi) ** 2 * Y_sec
     I_sec = K_sec - (1 - delta) * K_sec(-1)
@@ -89,7 +89,7 @@ def pricing(pi, mc, r, Y, kappap, mup):
     #nkpc = kappap * (mc(-1) - 1 / mup) + Y / Y(-1) * np.log(1 + pi) / (1 + r) - np.log(1 + pi(-1))
     return nkpc
 
-@SimpleWithVectorArgs({"K_sec": 3, "Q_sec": 3, "productivity_sec": 3, "L_sec": 3, "mc_sec": 3, "nu_sec": 3})
+@simple_with_vector_args({"K_sec": 3, "Q_sec": 3, "productivity_sec": 3, "L_sec": 3, "mc_sec": 3, "nu_sec": 3})
 def investment(Q_sec, K_sec, r, L_sec, mc_sec, productivity_sec, delta, epsI, nu_sec):
     inv_sec = (K_sec / K_sec(-1) - 1) / (delta * epsI) + 1 - Q_sec
     val_sec = nu_sec * productivity_sec(+1) * (L_sec(+1) / K_sec) ** (1- nu_sec) * mc_sec(+1) - (K_sec(+1) / K_sec - (1-delta) + (K_sec(+1) / K_sec - 1)**2 / (2*delta*epsI)) + K_sec(+1) / K_sec * Q_sec(+1) - (1 + r(+1)) * Q_sec
@@ -104,7 +104,7 @@ def output_aggregation(Y_sec_1, Y_sec_2, Y_sec_3, eta):
     Y = (Y_sec_1 ** (1/power_y) + Y_sec_2 ** (1/power_y) + Y_sec_3 ** (1/power_y)) ** power_y
     return Y
 
-@SimpleWithVectorArgs({"productivity_sec": 3, "L_sec": 3, "nu_sec": 3, "K_sec": 3, "Y_sec": 3, "p_sec": 3, "sigma_sec": 3, "alpha_occ_sec_1": 3, "alpha_occ_sec_2": 3, "alpha_occ_sec_3": 3, "N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3})
+@simple_with_vector_args({"productivity_sec": 3, "L_sec": 3, "nu_sec": 3, "K_sec": 3, "Y_sec": 3, "p_sec": 3, "sigma_sec": 3, "alpha_occ_sec_1": 3, "alpha_occ_sec_2": 3, "alpha_occ_sec_3": 3, "N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3})
 def production_sec(productivity_sec, L_sec, nu_sec, K_sec, Y_sec, p_sec, alpha_occ_sec_1, alpha_occ_sec_2, alpha_occ_sec_3, w_occ_1, w_occ_2, w_occ_3, sigma_sec, N_occ_sec_1, N_occ_sec_2, N_occ_sec_3):
     prod_sec = productivity_sec * L_sec ** (1 - nu_sec) * K_sec(-1) ** nu_sec - Y_sec
     labor_sec_occ_1 = p_sec * (1 - nu_sec) * alpha_occ_sec_1 / w_occ_1 * (productivity_sec * K_sec(-1) ** nu_sec) ** (sigma_sec / (1 - nu_sec)) * Y_sec ** ((- sigma_sec + 1 - nu_sec) / (1 - nu_sec)) - N_occ_sec_1 * (1 - sigma_sec)
@@ -115,7 +115,7 @@ def production_sec(productivity_sec, L_sec, nu_sec, K_sec, Y_sec, p_sec, alpha_o
 
 
 
-@SimpleWithVectorArgs({"N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3, "alpha_occ_sec_1": 3, "alpha_occ_sec_2": 3, "alpha_occ_sec_3": 3, "sigma_sec": 3, "L_sec": 3, "Q_sec": 3, "K_sec": 3, "nu_sec": 3, "Y_sec": 3})
+@simple_with_vector_args({"N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3, "alpha_occ_sec_1": 3, "alpha_occ_sec_2": 3, "alpha_occ_sec_3": 3, "sigma_sec": 3, "L_sec": 3, "Q_sec": 3, "K_sec": 3, "nu_sec": 3, "Y_sec": 3})
 def marginal_costs(w_occ_1, w_occ_2, w_occ_3, N_occ_sec_1, N_occ_sec_2, N_occ_sec_3, sigma_sec, alpha_occ_sec_1, alpha_occ_sec_2, alpha_occ_sec_3, L_sec, epsI, Q_sec, delta, K_sec, nu_sec, Y_sec):
     mc_sec = (w_occ_1 * N_occ_sec_1 ** (1 - sigma_sec) / alpha_occ_sec_1 + w_occ_2 * N_occ_sec_2 ** (1 - sigma_sec) / alpha_occ_sec_2 + w_occ_3 * N_occ_sec_3 ** (1 - sigma_sec) / alpha_occ_sec_3) * L_sec ** sigma_sec / (1 - nu_sec) / Y_sec - (1 - delta) * Q_sec * K_sec(-1) / nu_sec / Y_sec - 1 / delta / epsI / nu_sec / Y_sec / 2 / K_sec(-1) * (K_sec ** 2 - K_sec(-1) ** 2)
     mc = mc_sec_1 + mc_sec_2 + mc_sec_3
@@ -141,7 +141,7 @@ def wage_labor_aggregates(w_occ_1, w_occ_2, w_occ_3, N_occ_sec_1_1, N_occ_sec_1_
 
     return w, N, w_sec_1, w_sec_2, w_sec_3, N_sec_1, N_sec_2, N_sec_3, N_occ_1, N_occ_2, N_occ_3
 
-@SimpleWithVectorArgs({"Y_sec": 3})
+@simple_with_vector_args({"Y_sec": 3})
 def pricing_intermediate(Y, Y_sec, eta):
     p_sec = (Y / Y_sec) ** (1/eta)
     return p_sec
@@ -174,7 +174,7 @@ def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3):
     U = U1 + U2 + U3    
     return C, A, B, U
 
-@SimpleWithVectorArgs({"N_occ": 3, "gamma_hh_1": 3, "gamma_hh_2": 3, "gamma_hh_3": 3, "w_occ": 3})
+@simple_with_vector_args({"N_occ": 3, "gamma_hh_1": 3, "gamma_hh_2": 3, "gamma_hh_3": 3, "w_occ": 3})
 def occupation_choice(N_occ, gamma_hh_1, gamma_hh_2, gamma_hh_3, m1, m2, m3, tax, frisch, vphi_1, vphi_2, vphi_3, w_occ):
     N_raw_1 = N_occ / m1 / gamma_hh_1
     N_raw_2 = N_occ / m2 / gamma_hh_2
@@ -201,17 +201,17 @@ def occupation_choice(N_occ, gamma_hh_1, gamma_hh_2, gamma_hh_3, m1, m2, m3, tax
 
 
 @simple
-def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir):
+def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir, N):
 
-    sus_eq = susceptible(+1) + (
-            beta_sir * infected * susceptible / (infected + susceptible + recovered)
-            ) - susceptible + covid_shock(+1)
+    
+    sus_eq = susceptible - (1 - beta_sir * infected(-1) / (infected(-1) + recovered(-1) + susceptible(-1))
+                            ) * susceptible(-1) + covid_shock
 
-    inf_eq = infected(+1) - (1 - gamma_sir) * infected - (
-            beta_sir * infected * susceptible / (infected + susceptible + recovered)
-            ) * susceptible - covid_shock(+1)
+    inf_eq = infected - (1 - gamma_sir + beta_sir * susceptible(-1) / (infected(-1) + recovered(-1) + susceptible(-1))
+                         ) * infected(-1) - covid_shock
 
-    rec_eq = recovered(+1) - recovered - gamma_sir * infected
+    rec_eq = recovered - recovered(-1) - gamma_sir * infected(-1)
+
     return sus_eq, inf_eq, rec_eq
 
 ss = two_asset_sec_occ_v4.hank_ss()
@@ -491,6 +491,7 @@ dN = G['N']['covid_shock'] @ dcovid
 di = G['i']['covid_shock'] @ dcovid
 dC = G['C']['covid_shock'] @ dcovid
 
+
 fig, axs = plt.subplots(2, 2, figsize=(10,10))
 fig.suptitle(r'Responses to covid shock')
 axs[0,0].plot(dY[:25])
@@ -502,6 +503,21 @@ axs[1, 0].set_title('Labor hours')
 axs[1,1].plot(dC[:25])
 axs[1, 1].set_title('Consumption')
 plt.show()
+
+dsus = G['susceptible']['covid_shock'] @ dcovid
+dinf = G['infected']['covid_shock'] @ dcovid
+drec = G['recovered']['covid_shock'] @ dcovid
+
+fig, axs = plt.subplots(2, 2, figsize=(10,10))
+fig.suptitle(r'Responses to covid shock')
+axs[0,0].plot(dsus[:25])
+axs[0, 0].set_title('susceptible')
+axs[0,1].plot(dinf[:25])
+axs[0, 1].set_title('infected')
+axs[1,0].plot(drec[:25])
+axs[1, 0].set_title('recovered')
+plt.show()
+
 
 
 dN_1_1 = G['N_occ_sec_1_1']['covid_shock'] @ dcovid
