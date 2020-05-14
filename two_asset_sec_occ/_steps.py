@@ -31,8 +31,9 @@ def step3(lhs, rhs, Wb, a_grid, eis, nZ, nB, nA):
                     y1 = lhs[iz, ibp, iap] - rhs[iap, ia]
                     ap_endo[iz, ibp, ia] = a_grid[iap - 1] - y0 * (a_grid[iap] - a_grid[iap - 1]) / (y1 - y0)
                     Wb_endo[iz, ibp, ia] = Wb[iz, ibp, iap - 1] + (
-                                ap_endo[iz, ibp, ia] - a_grid[iap - 1]) * (
-                                Wb[iz, ibp, iap] - Wb[iz, ibp, iap - 1]) / (a_grid[iap] - a_grid[iap - 1])
+                            ap_endo[iz, ibp, ia] - a_grid[iap - 1]) * (
+                                                   Wb[iz, ibp, iap] - Wb[iz, ibp, iap - 1]) / (
+                                                       a_grid[iap] - a_grid[iap - 1])
     c_endo = Wb_endo ** (-eis)
     return ap_endo, c_endo
 
