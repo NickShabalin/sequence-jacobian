@@ -733,5 +733,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'N_hh_occ_2_1': N_hh_occ21, 'N_hh_occ_2_2': N_hh_occ22, 'N_hh_occ_2_3': N_hh_occ23,
                'N_hh_occ_3_1': N_hh_occ31, 'N_hh_occ_3_2': N_hh_occ32, 'N_hh_occ_3_3': N_hh_occ33,
 
+               'possible_occupation_1': 0, 'possible_occupation_2': 1, 'possible_occupation_3': 2
+
                })
     return ss
+
+ss = hank_ss()
