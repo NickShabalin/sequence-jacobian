@@ -162,19 +162,19 @@ class SSBuilder:
         out = [{}] * 3
 
         for i in range(3):
-            out[i] = household_inc.ss(Va1=self._Va[i], Vb1=self._Vb[i], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid, N_hh_occ = self._N_hh_occ[i],
+            out[i] = household_inc.ss(Va=self._Va[i], Vb=self._Vb[i], Pi=self._Pi, a_grid=self._a_grid, b_grid=self._b_grid, N_hh_occ = self._N_hh_occ[i],
                                       tax=self._tax, w_occ = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta_loc,
                                       eis=self._eis, rb=self._rb, ra=self._ra, chi0=self._chi0, chi1=chi1_loc, chi2=self._chi2, gamma_hh = self._gamma_hh[i], m = self._m[i])
 
-        asset_mkt = out[0]["A1"] + out[1]["A1"] + out[2]["A1"] + out[0]["B1"] + out[1]["B1"] + out[2]["B1"] - self._equity_price - self._Bg
+        asset_mkt = out[0]["A"] + out[1]["A"] + out[2]["A"] + out[0]["B"] + out[1]["B"] + out[2]["B"] - self._equity_price - self._Bg
 
         intratemp_hh = [vphi_loc[i] * (self._labor_hours_hh[i][i] / self._m[i] / self._gamma_hh[i][i]) ** (1/self._frisch) -
-                        (1 - self._tax) * self._w_occ[i] * out[i][f"U1"] * self._gamma_hh[i][i] * self._m[i]
+                        (1 - self._tax) * self._w_occ[i] * out[i][f"U"] * self._gamma_hh[i][i] * self._m[i]
                         for i in range(3)]
 
-        ds = np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B1'] + out[1]['B1'] + out[2]['B1'] - self._Bh])
+        ds = np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B'] + out[1]['B'] + out[2]['B'] - self._Bh])
 
-        return np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B1'] + out[1]['B1'] + out[2]['B1'] - self._Bh])
+        return np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B'] + out[1]['B'] + out[2]['B'] - self._Bh])
 
     def __init__(self,
                  amax=4000,
@@ -295,27 +295,27 @@ class SSBuilder:
             labor_mk[i] = self._N_occ[i] - self._labor_hours_hh[0][0] * (0 == i) - self._labor_hours_hh[1][1] * (1 == i) - self._labor_hours_hh[2][2] * (2 == i)
 
         # extra evaluation to report variables
-        ss1 = household_inc.ss(Va1=self._Va[0], Vb1=self._Vb[0], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid,
+        ss1 = household_inc.ss(Va=self._Va[0], Vb=self._Vb[0], Pi=self._Pi, a_grid=self._a_grid, b_grid=self._b_grid,
                                tax=self._tax, w_occ = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                eis=self._eis, rb=self._rb, ra=self._ra, chi0=self._chi0, chi1=chi1, chi2=self._chi2, gamma_hh = self._gamma_hh[0], m = self._m[0], N_hh_occ = self._N_hh_occ[0])
-        ss2 = household_inc.ss(Va1=self._Va[1], Vb1=self._Vb[1], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid,
+        ss2 = household_inc.ss(Va=self._Va[1], Vb=self._Vb[1], Pi=self._Pi, a_grid=self._a_grid, b_grid=self._b_grid,
                                tax=self._tax, w_occ = self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                eis=self._eis, rb=self._rb, ra=self._ra, chi0=self._chi0, chi1=chi1, chi2=self._chi2, gamma_hh = self._gamma_hh[1], m = self._m[1], N_hh_occ = self._N_hh_occ[1])
 
-        ss3 = household_inc.ss(Va1=self._Va[2], Vb1=self._Vb[2], Pi=self._Pi, a1_grid=self._a_grid, b1_grid=self._b_grid,
+        ss3 = household_inc.ss(Va=self._Va[2], Vb=self._Vb[2], Pi=self._Pi, a_grid=self._a_grid, b_grid=self._b_grid,
                                tax=self._tax, w_occ=self._w_occ, e_grid=self._e_grid, k_grid=self._k_grid, beta=beta,
                                eis=self._eis, rb=self._rb, ra=self._ra, chi0=self._chi0, chi1=chi1, chi2=self._chi2, gamma_hh = self._gamma_hh[2], m = self._m[2], N_hh_occ = self._N_hh_occ[2])
 
 
 
         # calculate aggregate adjustment cost and check Walras's law
-        chi_hh1 = Psi_fun(ss1['a1'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
-        chi_hh2 = Psi_fun(ss2['a1'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
-        chi_hh3 = Psi_fun(ss3['a1'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
+        chi_hh1 = Psi_fun(ss1['a'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
+        chi_hh2 = Psi_fun(ss2['a'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
+        chi_hh3 = Psi_fun(ss3['a'], self._a_grid, self._r, self._chi0, chi1, self._chi2)
         Chi1 = np.vdot(ss1['D'], chi_hh1)
         Chi2 = np.vdot(ss2['D'], chi_hh2)
         Chi3 = np.vdot(ss3['D'], chi_hh3)
-        goods_mkt = ss1['C1'] + ss2['C1'] + ss3['C1'] + self._I + self._G + Chi1 + Chi2 + Chi3 + self._omega * (ss1['B1'] + ss2['B1'] + ss3['B1']) - self._Y
+        goods_mkt = ss1['C'] + ss2['C'] + ss3['C'] + self._I + self._G + Chi1 + Chi2 + Chi3 + self._omega * (ss1['B'] + ss2['B'] + ss3['B']) - self._Y
         #    assert np.abs(goods_mkt) < 1E-7
 
         ss = ss1
@@ -331,17 +331,20 @@ class SSBuilder:
                    'p': self._p, 'mup': self._mup, 'eta': self._eta, 'ra': self._ra, 'rb': self._rb,
                    'beta_sir': 1.5, 'gamma_sir': 1, 'covid_shock': 0, 'susceptible': 1, 'infected': 0, 'recovered': 0,
 
-                   'C': ss1['C1'] + ss2['C1'] + ss3['C1'], 'A': ss1['A1'] + ss2['A1'] + ss3['A1'],
-                   'B': ss1['B1'] + ss2['B1'] + ss3['B1'], 'U': ss1['U1'] + ss2['U1'] + ss3['U1'],
+                   'C': ss1['C'] + ss2['C'] + ss3['C'], 'A': ss1['A'] + ss2['A'] + ss3['A'],
+                   'B': ss1['B'] + ss2['B'] + ss3['B'], 'U': ss1['U'] + ss2['U'] + ss3['U'],
 
-                   'Vb2': ss2['Vb1'], 'Va2': ss2['Va1'], 'b2_grid': ss2['b1_grid'], 'A2': ss2['A1'], 'B2': ss2['B1'],
-                   'U2': ss2['U1'],
-                   'a2_grid': ss2['a1_grid'], 'b2': ss2['b1'], 'a2': ss2['a1'], 'c2': ss2['c1'], 'u2': ss2['u1'],
-                   'C2': ss2['C1'],
+                   'Vb1': ss1['Vb'], 'Va1': ss1['Va'], 'b1_grid': ss1['b_grid'], 'A1': ss1['A'], 'B1': ss1['B'],
+                   'U1': ss1['U'], 'a1_grid': ss1['a_grid'], 'b1': ss1['b'], 'a1': ss1['a'], 'c1': ss1['c'],
+                   'u1': ss1['u'], 'C1': ss1['C'],
 
-                   'Vb3': ss3['Vb1'], 'Va3': ss3['Va1'], 'b3_grid': ss3['b1_grid'], 'A3': ss3['A1'], 'B3': ss3['B1'],
-                   'U3': ss3['U1'], 'a3_grid': ss3['a1_grid'], 'b3': ss3['b1'], 'a3': ss3['a1'], 'c3': ss3['c1'],
-                   'u3': ss3['u1'], 'C3': ss3['C1'],
+                   'Vb2': ss2['Vb'], 'Va2': ss2['Va'], 'b2_grid': ss2['b_grid'], 'A2': ss2['A'], 'B2': ss2['B'],
+                   'U2': ss2['U'], 'a2_grid': ss2['a_grid'], 'b2': ss2['b'], 'a2': ss2['a'], 'c2': ss2['c'],
+                   'u2': ss2['u'], 'C2': ss2['C'],
+
+                   'Vb3': ss3['Vb'], 'Va3': ss3['Va'], 'b3_grid': ss3['b_grid'], 'A3': ss3['A'], 'B3': ss3['B'],
+                   'U3': ss3['U'], 'a3_grid': ss3['a_grid'], 'b3': ss3['b'], 'a3': ss3['a'], 'c3': ss3['c'],
+                   'u3': ss3['u'], 'C3': ss3['C'],
 
                    'K_sec_1': self._K_sec[0], 'K_sec_2': self._K_sec[1], 'K_sec_3': self._K_sec[2],
                    'Y_sec_1': self._Y_sec[0], 'Y_sec_2': self._Y_sec[1], 'Y_sec_3': self._Y_sec[2],
@@ -394,5 +397,7 @@ class SSBuilder:
 
                    'N_hh_occ_1_1': self._N_hh_occ[0][0], 'N_hh_occ_1_2': self._N_hh_occ[0][1], 'N_hh_occ_1_3': self._N_hh_occ[0][2],
                    'N_hh_occ_2_1': self._N_hh_occ[1][0], 'N_hh_occ_2_2': self._N_hh_occ[1][1], 'N_hh_occ_2_3': self._N_hh_occ[1][2],
-                   'N_hh_occ_3_1': self._N_hh_occ[2][0], 'N_hh_occ_3_2': self._N_hh_occ[2][1], 'N_hh_occ_3_3': self._N_hh_occ[2][2]})
+                   'N_hh_occ_3_1': self._N_hh_occ[2][0], 'N_hh_occ_3_2': self._N_hh_occ[2][1], 'N_hh_occ_3_3': self._N_hh_occ[2][2],
+                   'possible_occupation_1': 0, 'possible_occupation_2': 1, 'possible_occupation_3': 2
+                   })
         return ss

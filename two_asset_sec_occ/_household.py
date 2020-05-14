@@ -7,7 +7,6 @@ from ._steps import step3, step4, step5, step6
 
 @het(exogenous='Pi', policy=['b', 'a'], backward=['Vb', 'Va'])  # order as in grid!
 def household(Va_p, Vb_p, Pi_p, a_grid, b_grid, z_grid, e_grid, k_grid, beta, eis, rb, ra, chi0, chi1, chi2):
-
     # get grid dimensions
     nZ, nB, nA = Va_p.shape
     nK = k_grid.shape[0]
@@ -47,8 +46,4 @@ def household(Va_p, Vb_p, Pi_p, a_grid, b_grid, z_grid, e_grid, k_grid, beta, ei
     Va = (1 + ra - Psi2) * uc
     Vb = (1 + rb) * uc
 
-    Va1 = Va
-    Vb1 = Vb
-
-
-    return Va1, Vb1, a, b, c, u
+    return Va, Vb, a, b, c, u
