@@ -4,13 +4,33 @@ import jacobian as jac
 from simple_block import simple
 
 
-def solved(unknowns, targets, block_list=[]):
+def solved(unknowns, targets, block_list=[], vector_arguments: dict = None):
     """Creates SolvedBlocks. Can be applied in two ways, both of which return a SolvedBlock:
         - as @solved(unknowns=..., targets=...) decorator on a single SimpleBlock
         - as function solved(blocklist=..., unknowns=..., targets=...) where blocklist
             can be any list of blocks
     """
 
+    # modify unknowns and targets for vector arguments support
+    if vector_arguments:
+        unknowns_new = []
+        targets_new = []
+        for arg in unknowns:
+            if arg not in vector_arguments:
+                unknowns_new.append(arg)
+                continue
+            for i in range(1, vector_arguments[arg] + 1):
+                unknowns_new.append(f"{arg}_{i}")
+        for tar in targets:
+            if tar not in vector_arguments:
+                targets_new.append(tar)
+                continue
+            for i in range(1, vector_arguments[tar] + 1):
+                targets_new.append(f"{tar}_{i}")
+        unknowns, targets = unknowns_new, targets_new
+
+    print(unknowns)
+    print(targets)
     if block_list:
         # ordinary call, not as decorator
         return SolvedBlock(block_list, unknowns, targets)
