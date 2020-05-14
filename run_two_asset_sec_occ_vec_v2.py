@@ -9,6 +9,7 @@ from solved_block import solved
 import two_asset_sec_occ_v4
 import determinacy as det
 import math
+from two_asset_sec_occ import SSBuilder
 
 @simple
 def taylor(rstar, pi, phi):
@@ -146,25 +147,31 @@ def pricing_intermediate(Y, Y_sec, eta):
     p_sec = (Y / Y_sec) ** (1/eta)
     return p_sec
 
-'''
+
 production = solved(block_list=[output_aggregation, production_sec, investment, marginal_costs,
                                 wage_labor_aggregates, dividend, pricing, arbitrage, dividend_agg],
                     unknowns=['Q_sec', 'K_sec', 'pi', 'Y_sec', 'N_occ_sec_1', 'N_occ_sec_2', 'N_occ_sec_3', 'p_sec'],
-                    targets=['inv_sec', 'val_sec', 'nkpc', 'prod_sec', 'labor_sec_occ_1', 'labor_sec_occ_2', 'labor_sec_occ_3', 'equity'])
-'''
-production = solved(block_list=[output_aggregation, production_sec, investment, marginal_costs,
-                                wage_labor_aggregates, dividend, pricing, arbitrage, dividend_agg],
-                    unknowns=['Q_sec_1', 'Q_sec_2', 'Q_sec_3', 'K_sec_1', 'K_sec_2', 'K_sec_3', 'pi',
-                              'Y_sec_1', 'Y_sec_2', 'Y_sec_3', 'p_sec_1', 'p_sec_2', 'p_sec_3',
-                              'N_occ_sec_1_1', 'N_occ_sec_1_2', 'N_occ_sec_1_3',
-                              'N_occ_sec_2_1', 'N_occ_sec_2_2', 'N_occ_sec_2_3',
-                              'N_occ_sec_3_1', 'N_occ_sec_3_2', 'N_occ_sec_3_3'],
-                    targets=['inv_sec_1', 'inv_sec_2', 'inv_sec_3', 'val_sec_1', 'val_sec_2', 'val_sec_3', 'nkpc',
-                             'prod_sec_1', 'prod_sec_2', 'prod_sec_3', 'equity_1', 'equity_2', 'equity_3',
-                             'labor_sec_occ_1_1', 'labor_sec_occ_1_2', 'labor_sec_occ_1_3',
-                             'labor_sec_occ_2_1', 'labor_sec_occ_2_2', 'labor_sec_occ_2_3',
-                             'labor_sec_occ_3_1', 'labor_sec_occ_3_2', 'labor_sec_occ_3_3'])
+                    targets=['inv_sec', 'val_sec', 'nkpc', 'prod_sec', 'labor_sec_occ_1', 'labor_sec_occ_2',
+                             'labor_sec_occ_3', 'equity'],
+                    vector_arguments={"Q_sec": 3, "K_sec": 3, "Y_sec": 3,
+                                      "N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3,
+                                      "p_sec": 3, "inv_sec": 3, "val_sec": 3, "prod_sec": 3,
+                                      "labor_sec_occ_1": 3, "labor_sec_occ_2": 3, "labor_sec_occ_3": 3,
+                                      "equity": 3})
 
+# production = solved(block_list=[output_aggregation, production_sec, investment, marginal_costs,
+#                                 wage_labor_aggregates, dividend, pricing, arbitrage, dividend_agg],
+#                     unknowns=['Q_sec_1', 'Q_sec_2', 'Q_sec_3', 'K_sec_1', 'K_sec_2', 'K_sec_3', 'pi',
+#                               'Y_sec_1', 'Y_sec_2', 'Y_sec_3', 'p_sec_1', 'p_sec_2', 'p_sec_3',
+#                               'N_occ_sec_1_1', 'N_occ_sec_1_2', 'N_occ_sec_1_3',
+#                               'N_occ_sec_2_1', 'N_occ_sec_2_2', 'N_occ_sec_2_3',
+#                               'N_occ_sec_3_1', 'N_occ_sec_3_2', 'N_occ_sec_3_3'],
+#                     targets=['inv_sec_1', 'inv_sec_2', 'inv_sec_3', 'val_sec_1', 'val_sec_2', 'val_sec_3', 'nkpc',
+#                              'prod_sec_1', 'prod_sec_2', 'prod_sec_3', 'equity_1', 'equity_2', 'equity_3',
+#                              'labor_sec_occ_1_1', 'labor_sec_occ_1_2', 'labor_sec_occ_1_3',
+#                              'labor_sec_occ_2_1', 'labor_sec_occ_2_2', 'labor_sec_occ_2_3',
+#                              'labor_sec_occ_3_1', 'labor_sec_occ_3_2', 'labor_sec_occ_3_3'])
+#
 
 @simple
 def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3):
@@ -215,6 +222,17 @@ def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir
     return sus_eq, inf_eq, rec_eq
 
 ss = two_asset_sec_occ_v4.hank_ss()
+#
+#
+# # DEBUG TODO: Delete this after refactoring
+# ss_1 = SSBuilder().hank_ss()
+#
+# for k, v in ss.items():
+#     print(k)
+#     if isinstance(v, np.ndarray):
+#         assert np.array_equal(ss[k], ss_1[k])
+#     else:
+#         assert ss[k] == ss_1[k]
 
 T = 300
 block_list = [consumers_aggregator, two_asset_sec_occ_v4.household_inc1, two_asset_sec_occ_v4.household_inc2, two_asset_sec_occ_v4.household_inc3,
