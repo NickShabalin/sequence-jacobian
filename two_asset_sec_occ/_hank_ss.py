@@ -219,19 +219,13 @@ class SSBuilder:
                                 w_occ=self._w_occ)
                for i in range(3)]
 
-        A_sum = sum([out[i]["A"] for i in range(3)])
-        B_sum = sum([out[i]["B"] for i in range(3)])
-        asset_mkt = A_sum + B_sum - self._equity_price - self._Bg
+        asset_mkt = out[0]["A"] + out[1]["A"] + out[2]["A"] + out[0]["B"] + out[1]["B"] + out[2]["B"] - self._equity_price - self._Bg
 
-        intratemp_hh = [vphi_loc[i] *
-                        (self._labor_hours_hh[i][i] / self._m[i] / self._gamma_hh[i][i]) ** (1/self._frisch) -
+        intratemp_hh = [vphi_loc[i] * (self._labor_hours_hh[i][i] / self._m[i] / self._gamma_hh[i][i]) ** (1/self._frisch) -
                         (1 - self._tax) * self._w_occ[i] * out[i][f"U"] * self._gamma_hh[i][i] * self._m[i]
                         for i in range(3)]
 
-        result = np.array([asset_mkt,
-                           intratemp_hh[0], intratemp_hh[1], intratemp_hh[2],
-                           out[0]['B'] + out[1]['B'] + out[2]['B'] - self._Bh])
-        return result
+        return np.array([asset_mkt, intratemp_hh[0], intratemp_hh[1], intratemp_hh[2], out[0]['B'] + out[1]['B'] + out[2]['B'] - self._Bh])
 
     def __init__(self,
                  amax=4000,
@@ -297,10 +291,12 @@ class SSBuilder:
         self._rho_z = rho_z
         self._sigma_sec = [0.2, 0.2, 0.2]
         self._sigma_z = sigma_z
+        self._ss = {}
         self._tot_wealth = tot_wealth
         self._vphi_guess = vphi_guess
         self._w_occ = [3, 8, 2]
         self._Y_sec = [0.260986566543579, 0.343330949544907, 0.398539662361145]
+
         self._set_up_gamma_hh()
         self._set_up_N_sec_occ()
 
@@ -347,21 +343,13 @@ class SSBuilder:
 
         ss = self._ss_list[0]
 
-        print(locals())
+        self._ss.update(self._ss_list[0])
 
         r = {f"alpha_occ_sec_{i+1}_{j+1}]": self._alpha_sec_occ[j][i] for i, j in product(range(3), repeat=2)}
 
 
-        'alpha_occ_sec_1_1': self._alpha_sec_occ[0][0],
-        'alpha_occ_sec_1_2': self._alpha_sec_occ[1][0],
-        'alpha_occ_sec_1_3': self._alpha_sec_occ[2][0],
-        'alpha_occ_sec_2_1': self._alpha_sec_occ[0][1],
-        'alpha_occ_sec_2_2': self._alpha_sec_occ[1][1],
-        'alpha_occ_sec_2_3': self._alpha_sec_occ[2][1],
-        'alpha_occ_sec_3_1': self._alpha_sec_occ[0][2],
-        'alpha_occ_sec_3_2': self._alpha_sec_occ[1][2],
-        'alpha_occ_sec_3_3': self._alpha_sec_occ[2][2],
 
+        print(locals())
 
         ss.update({'pi': 0, 'piw': 0, 'Q': self._Q, 'Y': self._Y, 'mc': self._mc, 'K': self._K, 'I': self._I, 'tax': self._tax,
                    'r': self._r, 'Bg': self._Bg, 'G': self._G, 'Chi': self._Chi[0] +  self._Chi[1] +  self._Chi[2], 'chi':  self._chi_hh[0] +  self._chi_hh[1] +  self._chi_hh[2], 'phi': self._phi,
