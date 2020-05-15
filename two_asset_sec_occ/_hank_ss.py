@@ -300,6 +300,15 @@ class SSBuilder:
         self._set_up_gamma_hh()
         self._set_up_N_sec_occ()
 
+    def _update_ss_with_vector_values(self, vectors, num):
+        for i in range(num):
+            for vec in vectors:
+                self._ss.update({f"{vec}_{i+1}": eval(f"self._{vec}[{i}]")})
+
+    def _update_ss_with_scalar_value(self, scalars):
+        for s in scalars:
+            self._ss.update({s: eval(f"self._{s}")})
+
     def hank_ss(self, noisy=True):
         """
         Solve steady state of full GE model.
@@ -341,94 +350,67 @@ class SSBuilder:
         goods_mkt = self._ss_list[0]['C'] + self._ss_list[1]['C'] + self._ss_list[2]['C'] + self._I + self._G +  self._Chi[0] +  self._Chi[1] +  self._Chi[2] + self._omega * (self._ss_list[0]['B'] + self._ss_list[1]['B'] + self._ss_list[2]['B']) - self._Y
         #    assert np.abs(goods_mkt) < 1E-7
 
-        ss = self._ss_list[0]
-
         self._ss.update(self._ss_list[0])
+        self._ss.update({f"alpha_occ_sec_{i+1}_{j+1}": self._alpha_sec_occ[j][i] for i, j in product(range(3), repeat=2)})
+        self._ss.update({f"gamma_hh_{i + 1}_{j + 1}": self._gamma_hh[i][j] for i, j in product(range(3), repeat=2)})
+        self._ss.update({f"N_occ_sec_{i+1}_{j+1}": self._N_sec_occ[j][i] for i, j in product(range(3), repeat=2)})
+        self._ss.update({f"N_hh_occ_{i + 1}_{j + 1}": self._N_hh_occ[i][j] for i, j in product(range(3), repeat=2)})
 
-        r = {f"alpha_occ_sec_{i+1}_{j+1}]": self._alpha_sec_occ[j][i] for i, j in product(range(3), repeat=2)}
+        for char in "CABU":
+            self._ss.update({char: self._ss_list[0][char] + self._ss_list[1][char] + self._ss_list[2][char]})
+
+        for i in range(3):
+            j = i + 1
+            self._ss.update({f"Vb{j}": self._ss_list[i]['Vb'], f"Va{j}": self._ss_list[i]['Va'],
+                             f"b{j}_grid": self._ss_list[i]['b_grid'], f"A{j}": self._ss_list[i]['A'],
+                             f"B{j}": self._ss_list[i]['B'],
+                             f"U{j}": self._ss_list[i]['U'], f"a{j}_grid": self._ss_list[i]['a_grid'],
+                             f"b{j}": self._ss_list[i]['b'], f"a{j}": self._ss_list[i]['a'],
+                             f"c{j}": self._ss_list[i]['c'],
+                             f"u{j}": self._ss_list[i]['u'], f"C{j}": self._ss_list[i]['C']})
 
 
+        self._update_ss_with_vector_values(["K_sec", "Y_sec", "N_sec", "w_occ", "w_sec", "productivity_sec",
+                                            "p_sec", "equity_price_sec", "Q_sec", "N_occ", "L_sec",
+                                            "nu_sec", "mc_sec", "I_sec", "div_sec", "sigma_sec", "div_sec"], 3)
 
-        print(locals())
+        self._update_ss_with_scalar_value(["a_grid", "b_grid", "beta", "Bg", "delta", "div", "e_grid", "epsI", "eta",
+                                           "frisch", "G", "I", "K", "k_grid", "kappap", "kappaw", "mc", "mup", "muw",
+                                           "omega", "p", "phi", "Pi", "pshare", "Q", "r", "ra", "rb", "tax", "w", "Y"])
 
-        ss.update({'pi': 0, 'piw': 0, 'Q': self._Q, 'Y': self._Y, 'mc': self._mc, 'K': self._K, 'I': self._I, 'tax': self._tax,
-                   'r': self._r, 'Bg': self._Bg, 'G': self._G, 'Chi': self._Chi[0] +  self._Chi[1] +  self._Chi[2], 'chi':  self._chi_hh[0] +  self._chi_hh[1] +  self._chi_hh[2], 'phi': self._phi,
-                   'beta': self._beta, 'vphi': (self._vphi1 * self._vphi2 * self._vphi3) ** (1 / 3),
-                   'vphi_1': self._vphi1, 'vphi_2': self._vphi2, 'vphi_3': self._vphi3,
-                   'omega': self._omega, 'delta': self._delta, 'muw': self._muw,
-                   'frisch': self._frisch, 'epsI': self._epsI, 'a_grid': self._a_grid, 'b_grid': self._b_grid,
-                   'z_grid': sum(self._z_grid), 'e_grid': self._e_grid,
-                   'k_grid': self._k_grid, 'Pi': self._Pi, 'kappap': self._kappap, 'kappaw': self._kappaw, 'rstar': self._r, 'i': self._r, 'w': self._w,
-                   'p': self._p, 'mup': self._mup, 'eta': self._eta, 'ra': self._ra, 'rb': self._rb,
-                   'beta_sir': 1.5, 'gamma_sir': 1, 'covid_shock': 0, 'susceptible': 1, 'infected': 0, 'recovered': 0,
-
-                   'C': self._ss_list[0]['C'] + self._ss_list[1]['C'] + self._ss_list[2]['C'], 'A': self._ss_list[0]['A'] + self._ss_list[1]['A'] + self._ss_list[2]['A'],
-                   'B': self._ss_list[0]['B'] + self._ss_list[1]['B'] + self._ss_list[2]['B'], 'U': self._ss_list[0]['U'] + self._ss_list[1]['U'] + self._ss_list[2]['U'],
-
-                   'Vb1': self._ss_list[0]['Vb'], 'Va1': self._ss_list[0]['Va'], 'b1_grid': self._ss_list[0]['b_grid'], 'A1': self._ss_list[0]['A'], 'B1': self._ss_list[0]['B'],
-                   'U1': self._ss_list[0]['U'], 'a1_grid': self._ss_list[0]['a_grid'], 'b1': self._ss_list[0]['b'], 'a1': self._ss_list[0]['a'], 'c1': self._ss_list[0]['c'],
-                   'u1': self._ss_list[0]['u'], 'C1': self._ss_list[0]['C'],
-
-                   'Vb2': self._ss_list[1]['Vb'], 'Va2': self._ss_list[1]['Va'], 'b2_grid': self._ss_list[1]['b_grid'], 'A2': self._ss_list[1]['A'], 'B2': self._ss_list[1]['B'],
-                   'U2': self._ss_list[1]['U'], 'a2_grid': self._ss_list[1]['a_grid'], 'b2': self._ss_list[1]['b'], 'a2': self._ss_list[1]['a'], 'c2': self._ss_list[1]['c'],
-                   'u2': self._ss_list[1]['u'], 'C2': self._ss_list[1]['C'],
-
-                   'Vb3': self._ss_list[2]['Vb'], 'Va3': self._ss_list[2]['Va'], 'b3_grid': self._ss_list[2]['b_grid'], 'A3': self._ss_list[2]['A'], 'B3': self._ss_list[2]['B'],
-                   'U3': self._ss_list[2]['U'], 'a3_grid': self._ss_list[2]['a_grid'], 'b3': self._ss_list[2]['b'], 'a3': self._ss_list[2]['a'], 'c3': self._ss_list[2]['c'],
-                   'u3': self._ss_list[2]['u'], 'C3': self._ss_list[2]['C'],
-
-                   'K_sec_1': self._K_sec[0], 'K_sec_2': self._K_sec[1], 'K_sec_3': self._K_sec[2],
-                   'Y_sec_1': self._Y_sec[0], 'Y_sec_2': self._Y_sec[1], 'Y_sec_3': self._Y_sec[2],
-                   'N_sec_1': self._N_sec[0], 'N_sec_2': self._N_sec[1], 'N_sec_3': self._N_sec[2],
-                   'N': self._N_sum,
-                   'gamma_hh_1_1': self._gamma_hh[0][0], 'gamma_hh_1_2': self._gamma_hh[0][1], 'gamma_hh_1_3': self._gamma_hh[0][2],
-                   'gamma_hh_2_1': self._gamma_hh[1][0], 'gamma_hh_2_2': self._gamma_hh[1][1], 'gamma_hh_2_3': self._gamma_hh[1][2],
-                   'gamma_hh_3_1': self._gamma_hh[2][0], 'gamma_hh_3_2': self._gamma_hh[2][1], 'gamma_hh_3_3': self._gamma_hh[2][2],
-                   "w1": self._w_occ[0],"w2": self._w_occ[1],"w3": self._w_occ[2],
-                   'w_occ_1': self._w_occ[0], 'w_occ_2': self._w_occ[1], 'w_occ_3': self._w_occ[2],
-                   'w_sec_1': self._w_sec[0], 'w_sec_2': self._w_sec[1], 'w_sec_3': self._w_sec[2],
-                   'I_sec_1': self._I_sec[0], 'I_sec_2': self._I_sec[1], 'I_sec_3': self._I_sec[2],
-                   'productivity_sec_1': self._productivity_sec[0],
-                   'productivity_sec_2': self._productivity_sec[1],
-                   'productivity_sec_3': self._productivity_sec[2],
-                   'p_sec_1': self._p_sec[0], 'p_sec_2': self._p_sec[1], 'p_sec_3': self._p_sec[2],
-                   'div_sec_1': self._div_sec[0], 'div_sec_2': self._div_sec[1], 'div_sec_3': self._div_sec[2],
-                   'div': self._div,
-                   'Q_sec_1': self._Q_sec[0], 'Q_sec_2': self._Q_sec[1], 'Q_sec_3': self._Q_sec[2],
-                   'N_occ_sec_1_1': self._N_sec_occ[0][0], 'N_occ_sec_1_2': self._N_sec_occ[1][0], 'N_occ_sec_1_3': self._N_sec_occ[2][0],
-                   'N_occ_sec_2_1': self._N_sec_occ[0][1], 'N_occ_sec_2_2': self._N_sec_occ[1][1], 'N_occ_sec_2_3': self._N_sec_occ[2][1],
-                   'N_occ_sec_3_1': self._N_sec_occ[0][2], 'N_occ_sec_3_2': self._N_sec_occ[1][2], 'N_occ_sec_3_3': self._N_sec_occ[2][2],
-
-                   'sigma_sec_1': self._sigma_sec[0], 'sigma_sec_2': self._sigma_sec[0], 'sigma_sec_3': self._sigma_sec[0],
-                   'psip_sec_1': 0, 'psip_sec_2': 0, 'psip_sec_3': 0, 'psip': 0,
-                   "mc_sec_1": self._mc_sec[0], "mc_sec_2": self._mc_sec[1], "mc_sec_3": self._mc_sec[2],
-                   "nu_sec_1": self._nu_sec[0], "nu_sec_2": self._nu_sec[1], "nu_sec_3": self._nu_sec[2],
-                   'equity_price_sec_1': self._equity_price_sec[0],
-                   'equity_price_sec_2': self._equity_price_sec[1],
-                   'equity_price_sec_3': self._equity_price_sec[2],
-                   'equity_price_sec1':  self._equity_price_sec[0], 'equity_price_sec2':self._equity_price_sec[1],
-                   'equity_price_sec3':self._equity_price_sec[2],
-                   'alpha_occ_sec_1_1': self._alpha_sec_occ[0][0],
-                   'alpha_occ_sec_1_2': self._alpha_sec_occ[1][0],
-                   'alpha_occ_sec_1_3': self._alpha_sec_occ[2][0],
-                   'alpha_occ_sec_2_1': self._alpha_sec_occ[0][1],
-                   'alpha_occ_sec_2_2': self._alpha_sec_occ[1][1],
-                   'alpha_occ_sec_2_3': self._alpha_sec_occ[2][1],
-                   'alpha_occ_sec_3_1': self._alpha_sec_occ[0][2],
-                   'alpha_occ_sec_3_2': self._alpha_sec_occ[1][2],
-                   'alpha_occ_sec_3_3': self._alpha_sec_occ[2][2],
-
-                   'pshare_1': self._pshare_sec[0],
-                   'pshare_2': self._pshare_sec[1],
-                   'pshare_3': self._pshare_sec[2],
-                   'pshare': self._pshare,
-                   'N_occ_1': self._N_occ[0], 'N_occ_2': self._N_occ[1], 'N_occ_3': self._N_occ[2],
-                   'L_sec_1': self._L_sec[0], 'L_sec_2': self._L_sec[1], 'L_sec_3': self._L_sec[2],
-                   'm1': self._m[0], 'm2': self._m[1], 'm3': self._m[2],
-
-                   'N_hh_occ_1_1': self._N_hh_occ[0][0], 'N_hh_occ_1_2': self._N_hh_occ[0][1], 'N_hh_occ_1_3': self._N_hh_occ[0][2],
-                   'N_hh_occ_2_1': self._N_hh_occ[1][0], 'N_hh_occ_2_2': self._N_hh_occ[1][1], 'N_hh_occ_2_3': self._N_hh_occ[1][2],
-                   'N_hh_occ_3_1': self._N_hh_occ[2][0], 'N_hh_occ_3_2': self._N_hh_occ[2][1], 'N_hh_occ_3_3': self._N_hh_occ[2][2],
-                   'possible_occupation_1': 0, 'possible_occupation_2': 1, 'possible_occupation_3': 2
-                   })
-        return ss
+        self._ss.update({'beta_sir': 1.5,
+                         'Chi': self._Chi[0] + self._Chi[1] + self._Chi[2],
+                         'chi': self._chi_hh[0] + self._chi_hh[1] + self._chi_hh[2],
+                         'covid_shock': 0,
+                         'gamma_sir': 1,
+                         'i': self._r,
+                         'infected': 0,
+                         'm1': self._m[0],
+                         'm2': self._m[1],
+                         'm3': self._m[2],
+                         'N': self._N_sum,
+                         'pi': 0,
+                         'piw': 0,
+                         'possible_occupation_1': 0,
+                         'possible_occupation_2': 1,
+                         'possible_occupation_3': 2,
+                         'pshare_1': self._pshare_sec[0],
+                         'pshare_2': self._pshare_sec[1],
+                         'pshare_3': self._pshare_sec[2],
+                         'psip': 0,
+                         'psip_sec_1': 0,
+                         'psip_sec_2': 0,
+                         'psip_sec_3': 0,
+                         'recovered': 0,
+                         'rstar': self._r,
+                         'susceptible': 1,
+                         'vphi': (self._vphi1 * self._vphi2 * self._vphi3) ** (1 / 3),
+                         'vphi_1': self._vphi1,
+                         'vphi_2': self._vphi2,
+                         'vphi_3': self._vphi3,
+                         "w1": self._w_occ[0],
+                         "w2": self._w_occ[1],
+                         "w3": self._w_occ[2],
+                         'z_grid': sum(self._z_grid)
+                         })
+        return self._ss
