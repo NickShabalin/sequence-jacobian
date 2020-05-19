@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 
 import utils
-from ._misc import Psi_fun
+from .misc import Psi_fun
 
 
 @njit

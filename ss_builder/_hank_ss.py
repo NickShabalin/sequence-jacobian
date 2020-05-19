@@ -3,7 +3,8 @@ from itertools import product
 import numpy as np
 
 import utils
-from households import household, income_grid, Psi_fun
+from households import household, income_grid
+from households.misc import Psi_fun
 from ._labor_demand_calculation import LaborDemandCalculation
 
 household_inc = household.attach_hetinput(income_grid)
@@ -329,6 +330,7 @@ class SSBuilder:
         self._Q = 1
         self._Q_sec = [1, 1, 1]
         self._r = r
+        self._recovered = 0
         self._rho_z = rho_z
         self._sigma_sec = [0.2, 0.2, 0.2]
         self._sigma_z = sigma_z
@@ -393,7 +395,8 @@ class SSBuilder:
         self._update_ss_with_scalar_values(["a_grid", "b_grid", "beta", "beta_sir", "Bg", "covid_shock", "delta",
                                             "div", "e_grid", "epsI", "eta", "frisch", "G", "gamma_sir", "I",
                                             "infected", "K", "k_grid", "kappap", "kappaw", "mc", "mup", "muw", "omega",
-                                            "p", "phi", "Pi", "pshare", "Q", "r", "ra", "rb", "tax", "w", "Y"])
+                                            "p", "phi", "Pi", "pshare", "Q", "r", "ra", "rb", "recovered", "tax",
+                                            "w", "Y"])
 
         self._update_ss_with_vector_values(["div_sec", "div_sec", "equity_price_sec", "I_sec", "K_sec", "L_sec",
                                             "mc_sec", "N_occ", "N_sec", "nu_sec", "p_sec", "productivity_sec",
@@ -413,7 +416,6 @@ class SSBuilder:
                          'pshare_2': self._pshare_sec[1],
                          'pshare_3': self._pshare_sec[2],
                          'psip': 0,
-                         'recovered': 0,
                          'rstar': self._r,
                          'susceptible': 1,
                          'vphi': sum(self._vphi) ** (1 / 3),

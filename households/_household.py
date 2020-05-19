@@ -1,8 +1,8 @@
 import numpy as np
 
 from het_block import het
-from ._misc import post_decision_vfun, Psi_fun, Psi1_fun, Psi2_fun
-from ._steps import step3, step4, step5, step6
+from .misc import post_decision_vfun, Psi_fun, Psi1_fun, Psi2_fun
+from .steps import step3, step4, step5, step6
 
 
 @het(exogenous='Pi', policy=['b', 'a'], backward=['Vb', 'Va'])  # order as in grid!
