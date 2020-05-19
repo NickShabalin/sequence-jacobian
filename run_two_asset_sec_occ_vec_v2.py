@@ -52,7 +52,7 @@ def mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, fri
     gamma_hh_3 = [gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3]
     w_occ = [w_occ_1, w_occ_2, w_occ_3]
     
-    covid_mult = math.exp(beta_sir * infected / (infected + susceptible + recovered))
+    covid_mult = math.exp(beta_sir * infected(-1) / (infected(-1) + susceptible(-1) + recovered(-1)))
     #covid_mult = (1 + beta_sir * infected / (infected + susceptible + recovered))
     #covid_mult = 1
 
@@ -206,10 +206,10 @@ def occupation_choice(N_occ, gamma_hh_1, gamma_hh_2, gamma_hh_3, m1, m2, m3, tax
 def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir, N):
 
     
-    sus_eq = susceptible - (1 - beta_sir * infected(-1) * N / (infected(-1) + recovered(-1) + susceptible(-1))
+    sus_eq = susceptible - (1 - beta_sir * infected(-1) / (infected(-1) + recovered(-1) + susceptible(-1))
                             ) * susceptible(-1) + covid_shock(-1)
 
-    inf_eq = infected - (1 - gamma_sir + beta_sir * susceptible(-1) * N / (infected(-1) + recovered(-1) + susceptible(-1))
+    inf_eq = infected - (1 - gamma_sir + beta_sir * susceptible(-1) / (infected(-1) + recovered(-1) + susceptible(-1))
                          ) * infected(-1) - covid_shock(-1)
 
     rec_eq = recovered - recovered(-1) - gamma_sir * infected(-1)
