@@ -3,10 +3,8 @@ from itertools import product
 import numpy as np
 
 import utils
-from ._household import household
-from ._income import income_grid
+from households import household, income_grid, Psi_fun
 from ._labor_demand_calculation import LaborDemandCalculation
-from ._misc import Psi_fun
 
 household_inc = household.attach_hetinput(income_grid)
 
