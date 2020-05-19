@@ -2,6 +2,7 @@ from typing import List
 
 from numpy import ndarray
 
+
 # noinspection PyPep8Naming
 def income_grid(e_grid: ndarray,
                 tax: float,
