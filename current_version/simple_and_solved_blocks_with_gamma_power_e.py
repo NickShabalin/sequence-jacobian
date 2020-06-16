@@ -190,9 +190,9 @@ def dividend_agg(I_sec_1, I_sec_2, I_sec_3, psip_sec_1, psip_sec_2, psip_sec_3, 
 
 
 
-@simple_with_vector_args({"p_sec": 3, "mc_sec": 3})
-def pricing(mc_sec, r, Y, kappap, mup, eta, p_sec, p):
-    nkpc_sec = kappap * (p_sec / p) ** (- eta) * (mc_sec - 1 / mup * p_sec / p) + Y(+1) / Y * np.log(p_sec(+1) / p_sec) / (1 + r(+1)) - np.log(p_sec / p_sec(-1))
+@simple_with_vector_args({"p_sec": 3, "mc_sec": 3, "f_sec": 3})
+def pricing(mc_sec, r, Y, kappap, mup, eta, p_sec, p, f_sec):
+    nkpc_sec = kappap * (p_sec / p) ** (- eta) * f_sec * (mc_sec - 1 / mup * p_sec / p) + Y(+1) / Y * np.log(p_sec(+1) / p_sec) / (1 + r(+1)) - np.log(p_sec / p_sec(-1))
     return nkpc_sec
 
 
@@ -204,9 +204,9 @@ def investment(Q_sec, K_sec, r, L_sec, productivity_sec, delta, epsI, nu_sec, mc
 
 
 @simple
-def output_aggregation(Y_sec_1, Y_sec_2, Y_sec_3, eta):
+def output_aggregation(Y_sec_1, Y_sec_2, Y_sec_3, eta, f_sec_1, f_sec_2, f_sec_3):
     power_y = eta / (eta - 1)
-    Y = (Y_sec_1 ** (1 / power_y) + Y_sec_2 ** (1 / power_y) + Y_sec_3 ** (1 / power_y)) ** power_y
+    Y = (f_sec_1 ** (1 / eta) * Y_sec_1 ** (1 / power_y) + f_sec_2 ** (1 / eta) * Y_sec_2 ** (1 / power_y) + f_sec_3 ** (1 / eta) * Y_sec_3 ** (1 / power_y)) ** power_y
     return Y
 
 @simple_with_vector_args({"productivity_sec": 3, "L_sec": 3, "nu_sec": 3, "K_sec": 3, "Y_sec": 3, "p_sec": 3, "sigma_sec": 3, "alpha_occ_sec_1": 3, "alpha_occ_sec_2": 3, "alpha_occ_sec_3": 3, "N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3})
@@ -290,9 +290,9 @@ def wage_labor_aggregates(w_occ_1, w_occ_2, w_occ_3,
     return w, N, w_sec_1, w_sec_2, w_sec_3, N_sec_1, N_sec_2, N_sec_3, L_sec_1, L_sec_2, L_sec_3
 
 
-@simple_with_vector_args({"Y_sec": 3})
-def pricing_intermediate(Y, Y_sec, eta, p):
-    p_sec = (Y / Y_sec) ** (1 / eta) * p
+@simple_with_vector_args({"Y_sec": 3, "f_sec": 3})
+def pricing_intermediate(Y, Y_sec, eta, p, f_sec):
+    p_sec = (f_sec * Y / Y_sec) ** (1 / eta) * p
     pi = p / p(-1) - 1
     return p_sec, pi
 

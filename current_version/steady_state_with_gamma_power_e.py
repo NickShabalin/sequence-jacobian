@@ -20,7 +20,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
 
     # solve analytically what we can
-    mup = 1.05
+    mup = 1.8
     #mup = 1.009861
     #mup = 1.00648
     #mup = 1.015
@@ -60,11 +60,15 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
 
     # new values will be here
-    Y_sec1 = 0.260986566543579
-    Y_sec2 = 0.343330949544907
-    Y_sec3 = 0.398539662361145
+    f_sec1 = 0.260986566543579
+    f_sec2 = 0.343330949544907
+    f_sec3 = 0.398539662361145
 
-    Y = (Y_sec1 ** ((eta - 1) / eta) + Y_sec2 ** ((eta - 1) / eta) + Y_sec3 ** ((eta - 1) / eta)) ** (eta / (eta - 1))
+    Y_sec1 = f_sec1
+    Y_sec2 = f_sec2
+    Y_sec3 = f_sec3
+
+    Y = (f_sec1 ** (1 / eta) * Y_sec1 ** ((eta - 1) / eta) + f_sec2 ** (1 / eta) * Y_sec2 ** ((eta - 1) / eta) + f_sec3 ** (1 / eta) * Y_sec3 ** ((eta - 1) / eta)) ** (eta / (eta - 1))
 
     nu_sec1 = 0.425027757883072
     nu_sec2 = 0.538959443569183
@@ -100,9 +104,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
 
 
-    p_sec1 = (Y / Y_sec1) ** (1 / eta) * p
-    p_sec2 = (Y / Y_sec2) ** (1 / eta) * p
-    p_sec3 = (Y / Y_sec3) ** (1 / eta) * p
+    p_sec1 = (f_sec1 * Y / Y_sec1) ** (1 / eta) * p
+    p_sec2 = (f_sec2 * Y / Y_sec2) ** (1 / eta) * p
+    p_sec3 = (f_sec3 * Y / Y_sec3) ** (1 / eta) * p
 
     #err1 = p - (p_sec1 ** (1 - eta) + p_sec2 ** (1 - eta) + p_sec3 ** (1 - eta)) ** (1 / (1 - eta))
 
@@ -425,7 +429,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'occupation_mult_for_covid_1': 1.2, 'occupation_mult_for_covid_2': 1, 'occupation_mult_for_covid_3': 2,
                'e_grid_1': e_grid[0], 'e_grid_2': e_grid[1], 'e_grid_3': e_grid[2],
                'pi_distribution_1': pi[0], 'pi_distribution_2': pi[1], 'pi_distribution_3': pi[2],
-               'q': q, 'q_1': q_1, 'q_2': q_2, 'q_3': q_3
+               'q': q, 'q_1': q_1, 'q_2': q_2, 'q_3': q_3,
+
+               'f_sec_1': f_sec1, 'f_sec_2': f_sec2, 'f_sec_3': f_sec3
 
 
                })

@@ -86,7 +86,7 @@ def out(sigma_sec1, sigma_sec2, sigma_sec3,
                 (p_sec3 * Y_sec3 * (1 - nu_sec3) * L_sec3 ** (-sigma_sec3) * alpha_sec_occ33) / w_occ3) ** (
                        1 / (1 - sigma_sec3))
 
-        wage_normalizer = 0.13
+        wage_normalizer = 0.19
 
         err7 = w_occ1 - 1 * wage_normalizer
         err8 = w_occ2 - 1.944502 * wage_normalizer
