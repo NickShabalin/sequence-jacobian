@@ -29,15 +29,15 @@ def labor_supply(q, pi_distribution, possible_occupation, m1, m2, m3, gamma_hh_1
     q_1 = 1 - infected * 0.82
     q_2 = 1 - infected * 0.9
     q_3 = 1 - infected * 0.927
-    z_grid_1_1 = (1 + gamma_hh_1) ** e_grid_1 * w_occ * N_hh_occ_1 * q
-    z_grid_1_2 = (1 + gamma_hh_1) ** e_grid_2 * w_occ * N_hh_occ_1 * q
-    z_grid_1_3 = (1 + gamma_hh_1) ** e_grid_3 * w_occ * N_hh_occ_1 * q
-    z_grid_2_1 = (1 + gamma_hh_2) ** e_grid_1 * w_occ * N_hh_occ_2 * q
-    z_grid_2_2 = (1 + gamma_hh_2) ** e_grid_2 * w_occ * N_hh_occ_2 * q
-    z_grid_2_3 = (1 + gamma_hh_2) ** e_grid_3 * w_occ * N_hh_occ_2 * q
-    z_grid_3_1 = (1 + gamma_hh_3) ** e_grid_1 * w_occ * N_hh_occ_3 * q
-    z_grid_3_2 = (1 + gamma_hh_3) ** e_grid_2 * w_occ * N_hh_occ_3 * q
-    z_grid_3_3 = (1 + gamma_hh_3) ** e_grid_3 * w_occ * N_hh_occ_3 * q
+    z_grid_1_1 = gamma_hh_1 * e_grid_1 * w_occ * N_hh_occ_1 * q
+    z_grid_1_2 = gamma_hh_1 * e_grid_2 * w_occ * N_hh_occ_1 * q
+    z_grid_1_3 = gamma_hh_1 * e_grid_3 * w_occ * N_hh_occ_1 * q
+    z_grid_2_1 = gamma_hh_2 * e_grid_1 * w_occ * N_hh_occ_2 * q
+    z_grid_2_2 = gamma_hh_2 * e_grid_2 * w_occ * N_hh_occ_2 * q
+    z_grid_2_3 = gamma_hh_2 * e_grid_3 * w_occ * N_hh_occ_2 * q
+    z_grid_3_1 = gamma_hh_3 * e_grid_1 * w_occ * N_hh_occ_3 * q
+    z_grid_3_2 = gamma_hh_3 * e_grid_2 * w_occ * N_hh_occ_3 * q
+    z_grid_3_3 = gamma_hh_3 * e_grid_3 * w_occ * N_hh_occ_3 * q
     all_grids_1_1 = [z_grid_1_1_1, z_grid_1_1_2, z_grid_1_1_3]
     all_grids_1_2 = [z_grid_1_2_1, z_grid_1_2_2, z_grid_1_2_3]
     all_grids_1_3 = [z_grid_1_3_1, z_grid_1_3_2, z_grid_1_3_3]
@@ -56,15 +56,15 @@ def labor_supply(q, pi_distribution, possible_occupation, m1, m2, m3, gamma_hh_1
     occupation_3_1 = all_grids_3_1.index(max(all_grids_3_1))
     occupation_3_2 = all_grids_3_2.index(max(all_grids_3_2))
     occupation_3_3 = all_grids_3_3.index(max(all_grids_3_3))
-    labor_supply_1_1 = (pi_distribution_1 * (1 + gamma_hh_1) ** e_grid_1) * (occupation_1_1 == possible_occupation ) * m1 * N_hh_occ_1 * q
-    labor_supply_1_2 = (pi_distribution_2 * (1 + gamma_hh_1) ** e_grid_2) * (occupation_1_2 == possible_occupation ) * m1 * N_hh_occ_1 * q
-    labor_supply_1_3 = (pi_distribution_3 * (1 + gamma_hh_1) ** e_grid_3) * (occupation_1_3 == possible_occupation ) * m1 * N_hh_occ_1 * q
-    labor_supply_2_1 = (pi_distribution_1 * (1 + gamma_hh_2) ** e_grid_1) * (occupation_2_1 == possible_occupation ) * m2 * N_hh_occ_2 * q
-    labor_supply_2_2 = (pi_distribution_2 * (1 + gamma_hh_2) ** e_grid_2) * (occupation_2_2 == possible_occupation ) * m2 * N_hh_occ_2 * q
-    labor_supply_2_3 = (pi_distribution_3 * (1 + gamma_hh_2) ** e_grid_3) * (occupation_2_3 == possible_occupation ) * m2 * N_hh_occ_2 * q
-    labor_supply_3_1 = (pi_distribution_1 * (1 + gamma_hh_3) ** e_grid_1) * (occupation_3_1 == possible_occupation ) * m3 * N_hh_occ_3 * q
-    labor_supply_3_2 = (pi_distribution_2 * (1 + gamma_hh_3) ** e_grid_2) * (occupation_3_2 == possible_occupation ) * m3 * N_hh_occ_3 * q
-    labor_supply_3_3 = (pi_distribution_3 * (1 + gamma_hh_3) ** e_grid_3) * (occupation_3_3 == possible_occupation ) * m3 * N_hh_occ_3 * q
+    labor_supply_1_1 = (pi_distribution_1 * gamma_hh_1 * e_grid_1) * (occupation_1_1 == possible_occupation ) * m1 * N_hh_occ_1 * q
+    labor_supply_1_2 = (pi_distribution_2 * gamma_hh_1 * e_grid_2) * (occupation_1_2 == possible_occupation ) * m1 * N_hh_occ_1 * q
+    labor_supply_1_3 = (pi_distribution_3 * gamma_hh_1 * e_grid_3) * (occupation_1_3 == possible_occupation ) * m1 * N_hh_occ_1 * q
+    labor_supply_2_1 = (pi_distribution_1 * gamma_hh_2 * e_grid_1) * (occupation_2_1 == possible_occupation ) * m2 * N_hh_occ_2 * q
+    labor_supply_2_2 = (pi_distribution_2 * gamma_hh_2 * e_grid_2) * (occupation_2_2 == possible_occupation ) * m2 * N_hh_occ_2 * q
+    labor_supply_2_3 = (pi_distribution_3 * gamma_hh_2 * e_grid_3) * (occupation_2_3 == possible_occupation ) * m2 * N_hh_occ_2 * q
+    labor_supply_3_1 = (pi_distribution_1 * gamma_hh_3 * e_grid_1) * (occupation_3_1 == possible_occupation ) * m3 * N_hh_occ_3 * q
+    labor_supply_3_2 = (pi_distribution_2 * gamma_hh_3 * e_grid_2) * (occupation_3_2 == possible_occupation ) * m3 * N_hh_occ_3 * q
+    labor_supply_3_3 = (pi_distribution_3 * gamma_hh_3 * e_grid_3) * (occupation_3_3 == possible_occupation ) * m3 * N_hh_occ_3 * q
     N_occ_1 = labor_supply_1_1_1 + labor_supply_1_2_1 + labor_supply_1_3_1 + labor_supply_2_1_1 + labor_supply_2_2_1 + labor_supply_2_3_1 + labor_supply_3_1_1 + labor_supply_3_2_1 + labor_supply_3_3_1
     N_occ_2 = labor_supply_1_1_2 + labor_supply_1_2_2 + labor_supply_1_3_2 + labor_supply_2_1_2 + labor_supply_2_2_2 + labor_supply_2_3_2 + labor_supply_3_1_2 + labor_supply_3_2_2 + labor_supply_3_3_2
     N_occ_3 = labor_supply_1_1_3 + labor_supply_1_2_3 + labor_supply_1_3_3 + labor_supply_2_1_3 + labor_supply_2_2_3 + labor_supply_2_3_3 + labor_supply_3_1_3 + labor_supply_3_2_3 + labor_supply_3_3_3

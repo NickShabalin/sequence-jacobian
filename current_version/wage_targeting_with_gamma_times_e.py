@@ -88,7 +88,7 @@ def out(sigma_sec1, sigma_sec2, sigma_sec3,
                 (p_sec3 * Y_sec3 * (1 - nu_sec3) * L_sec3 ** (-sigma_sec3) * alpha_sec_occ33) / w_occ3) ** (
                        1 / (1 - sigma_sec3))
 
-        wage_normalizer = 1 / 8
+        wage_normalizer = 1
 
         err7 = w_occ1 - 1 * wage_normalizer
         err8 = w_occ2 - 1.944502 * wage_normalizer
@@ -97,24 +97,13 @@ def out(sigma_sec1, sigma_sec2, sigma_sec3,
         # err8 = w_occ2 - 0.7
         # err9 = w_occ3 - 5
 
-        # err10 = N1 * pi[2] * m1 * (1 + gamma_hh_occ11) ** e_grid[2] - N_hh_eff_1
-        # err11 = N1 * (pi[0] * m1 * (1 + gamma_hh_occ12) ** e_grid[0] +
-        #                    pi[1] * m1 * (1 + gamma_hh_occ12) ** e_grid[1]) + N2 * (
-        #                      pi[0] * m2 * (1 + gamma_hh_occ22) ** e_grid[0] +
-        #                      pi[1] * m2 * (1 + gamma_hh_occ22) ** e_grid[1] +
-        #                      pi[2] * m2 * (1 + gamma_hh_occ22) ** e_grid[2]) + N3 * (
-        #                      pi[0] * m3 * (1 + gamma_hh_occ32) ** e_grid[0]) - N_hh_eff_2
-        # err12 = N3 * (pi[2] * m3 * (1 + gamma_hh_occ33) ** e_grid[2] +
-        #                    pi[1] * m3 * (1 + gamma_hh_occ33) ** e_grid[1]) - N_hh_eff_3
-
-        err10 = N1 * pi[2] * m1 * (1 + gamma_hh_occ11) ** e_grid[2] - N_hh_eff_1
-        err11 = N1 * (pi[0] * m1 * (1 + gamma_hh_occ12) ** e_grid[0]) + N2 * (
-                        pi[0] * m2 * (1 + gamma_hh_occ22) ** e_grid[0] +
-                        pi[1] * m2 * (1 + gamma_hh_occ22) ** e_grid[1] +
-                        pi[2] * m2 * (1 + gamma_hh_occ22) ** e_grid[2]) + N3 * (
-                        pi[0] * m3 * (1 + gamma_hh_occ32) ** e_grid[0]) - N_hh_eff_2
-        err12 = N3 * (pi[2] * m3 * (1 + gamma_hh_occ33) ** e_grid[2] +
-                      pi[1] * m3 * (1 + gamma_hh_occ33) ** e_grid[1]) + N1 * pi[1] * m1 * (1 + gamma_hh_occ12) ** e_grid[1] - N_hh_eff_3
+        err10 = N1 * (pi[2] * m1 * gamma_hh_occ11 * e_grid[2] + pi[1] * m1 * gamma_hh_occ12 * e_grid[1] +\
+                pi[0] * m1 * gamma_hh_occ12 * e_grid[0]) - N_hh_eff_1
+        err11 = N2 * (pi[0] * m2 * gamma_hh_occ22 * e_grid[0] +
+                             pi[1] * m2 * gamma_hh_occ22 * e_grid[1] +
+                             pi[2] * m2 * gamma_hh_occ22 * e_grid[2]) - N_hh_eff_2
+        err12 = N3 * (pi[2] * m3 * gamma_hh_occ33 * e_grid[2] +
+                           pi[1] * m3 * gamma_hh_occ33 * e_grid[1] + pi[0] * m3 * gamma_hh_occ32 * e_grid[0]) - N_hh_eff_3
 
 
 

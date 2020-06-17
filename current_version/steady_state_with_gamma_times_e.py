@@ -20,7 +20,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
 
     # solve analytically what we can
-    mup = 1.001
+    mup = 1.0001
     #mup = 1.009861
     #mup = 1.00648
     #mup = 1.015
@@ -30,7 +30,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     eta = mup / (mup - 1)
 
     gamma_hh_occ11 = 1.0
-    gamma_hh_occ12 = 0.447435140609741 - 0.6
+    gamma_hh_occ12 = 0.447435140609741
     gamma_hh_occ13 = 0.464943289756775
     gamma_hh1 = [gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13]
 
@@ -78,7 +78,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Q_sec2 = 1
     Q_sec3 = 1
 
-    N2 = N1 = N3 = 0.33
+    N1 = N2 = N3 = 1
 
     wages = [1, 1.944502, 1.563125]
 
@@ -90,15 +90,15 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
     for k in range(3):
         for o in range(3):
-            hh1_choice[o][k] = (1 + gamma_hh1[o]) ** e[k] * wages[o]
+            hh1_choice[o][k] = gamma_hh1[o] * e[k] * wages[o]
 
     for k in range(3):
         for o in range(3):
-            hh2_choice[o][k] = (1 + gamma_hh2[o]) ** e[k] * wages[o]
+            hh2_choice[o][k] = gamma_hh2[o] * e[k] * wages[o]
 
     for k in range(3):
         for o in range(3):
-            hh3_choice[o][k] = (1 + gamma_hh3[o]) ** e[k] * wages[o]
+            hh3_choice[o][k] = gamma_hh3[o] * e[k] * wages[o]
             
 
 
@@ -121,19 +121,17 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     N_sec_occ33 = 0.517401993274688
 
 
-    w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, \
-    m1, m2, m3, N_hh_eff_1, N_hh_eff_2, \
-    N_hh_eff_3 = wage_targeting_with_gamma_power_e.out(sigma_sec1, sigma_sec2, sigma_sec3,
-                                                       p_sec1, p_sec2, p_sec3,
-                                                       Y_sec1, Y_sec2, Y_sec3,
-                                                       nu_sec1, nu_sec2, nu_sec3,
-                                                       N_sec_occ11, N_sec_occ12, N_sec_occ13,
-                                                       N_sec_occ21, N_sec_occ22, N_sec_occ23,
-                                                       N_sec_occ31, N_sec_occ32, N_sec_occ33,
-                                                       N1, N2, N3, pi, e_grid,
-                                                       gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13,
-                                                       gamma_hh_occ21, gamma_hh_occ22,gamma_hh_occ23,
-                                                       gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33)
+    w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, m1, m2, m3, N_hh_eff_1, N_hh_eff_2, N_hh_eff_3 = wage_targeting_with_gamma_power_e.out(sigma_sec1, sigma_sec2, sigma_sec3,
+                                                                                            p_sec1, p_sec2, p_sec3,
+                                                                                            Y_sec1, Y_sec2, Y_sec3,
+                                                                                            nu_sec1, nu_sec2, nu_sec3,
+                                                                                            N_sec_occ11, N_sec_occ12, N_sec_occ13,
+                                                                                            N_sec_occ21, N_sec_occ22, N_sec_occ23,
+                                                                                            N_sec_occ31, N_sec_occ32, N_sec_occ33,
+                                                                                            N1, N2, N3, pi, e_grid,
+                                                                                            gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13,
+                                                                                            gamma_hh_occ21, gamma_hh_occ22,gamma_hh_occ23,
+                                                                                            gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33)
 
 
 
