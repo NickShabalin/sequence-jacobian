@@ -1,6 +1,5 @@
 from simple_block import simple, simple_with_vector_args
 from solved_block import solved
-import math
 import numpy as np
 
 @simple
@@ -322,11 +321,11 @@ production = solved(block_list=[output_aggregation, production_sec, investment,
 '''
 
 @simple
-def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3):
-    C = C1 + C2 + C3
-    A = A1 + A2 + A3
-    B = B1 + B2 + B3
-    U = U1 + U2 + U3
+def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3, m1, m2, m3):
+    C = m1 * C1 + m2 * C2 + m3 * C3
+    A = m1 * A1 + m2 * A2 + m3 * A3
+    B = m1 * B1 + m2 * B2 + m3 * B3
+    U = m1 * U1 + m2 * U2 + m3 * U3
     return C, A, B, U
 
 

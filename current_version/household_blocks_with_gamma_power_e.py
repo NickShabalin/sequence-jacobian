@@ -327,9 +327,9 @@ def income_hh_1(q_1, q_2, q_3, e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_
     N_hh_1 = [N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_1_3]
     gamma_hh_1 = [gamma_hh_1_1, gamma_hh_1_2, gamma_hh_1_3]
     w_occ = [w_occ_1, w_occ_2, w_occ_3]
-    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 for k in range(len(e_grid))]
-    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 for k in range(len(e_grid))]
-    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 for k in range(len(e_grid))]
+    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 / m1 for k in range(len(e_grid))]
+    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 / m1 for k in range(len(e_grid))]
+    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 / m1 for k in range(len(e_grid))]
     all_grids = np.array([z_grid_1, z_grid_2, z_grid_3])
     z_grid = all_grids.max(axis=1)
     return z_grid
@@ -339,9 +339,9 @@ def income_hh_2(q_1, q_2, q_3, e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_
     N_hh_1 = [N_hh_occ_2_1, N_hh_occ_2_2, N_hh_occ_2_3]
     gamma_hh_1 = [gamma_hh_2_1, gamma_hh_2_2, gamma_hh_2_3]
     w_occ = [w_occ_1, w_occ_2, w_occ_3]
-    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 for k in range(len(e_grid))]
-    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 for k in range(len(e_grid))]
-    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 for k in range(len(e_grid))]
+    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 / m2 for k in range(len(e_grid))]
+    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 / m2 for k in range(len(e_grid))]
+    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 / m2 for k in range(len(e_grid))]
     all_grids = np.array([z_grid_1, z_grid_2, z_grid_3])
     z_grid = all_grids.max(axis=1)
     return z_grid
@@ -351,9 +351,9 @@ def income_hh_3(q_1, q_2, q_3, e_grid, tax, w_occ_1, w_occ_2, w_occ_3, gamma_hh_
     N_hh_1 = [N_hh_occ_3_1, N_hh_occ_3_2, N_hh_occ_3_3]
     gamma_hh_1 = [gamma_hh_3_1, gamma_hh_3_2, gamma_hh_3_3]
     w_occ = [w_occ_1, w_occ_2, w_occ_3]
-    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 for k in range(len(e_grid))]
-    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 for k in range(len(e_grid))]
-    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 for k in range(len(e_grid))]
+    z_grid_1 = [(1 - tax) * (1 + gamma_hh_1[0]) ** e_grid[k] * w_occ[0] * N_hh_1[0] * q_1 / m3 for k in range(len(e_grid))]
+    z_grid_2 = [(1 - tax) * (1 + gamma_hh_1[1]) ** e_grid[k] * w_occ[1] * N_hh_1[1] * q_2 / m3 for k in range(len(e_grid))]
+    z_grid_3 = [(1 - tax) * (1 + gamma_hh_1[2]) ** e_grid[k] * w_occ[2] * N_hh_1[2] * q_3 / m3 for k in range(len(e_grid))]
     all_grids = np.array([z_grid_1, z_grid_2, z_grid_3])
     z_grid = all_grids.max(axis=1)
     return z_grid

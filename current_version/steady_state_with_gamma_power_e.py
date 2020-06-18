@@ -20,7 +20,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
 
     # solve analytically what we can
-    mup = 1.8
+    mup = 1.001
     #mup = 1.009861
     #mup = 1.00648
     #mup = 1.015
@@ -30,18 +30,18 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     eta = mup / (mup - 1)
 
     gamma_hh_occ11 = 1.0
-    gamma_hh_occ12 = 0.447435140609741
+    gamma_hh_occ12 = 0.447435140609741 - 0.6
     gamma_hh_occ13 = 0.464943289756775
     gamma_hh1 = [gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13]
 
     gamma_hh_occ21 = 0.278417140245438
-    gamma_hh_occ22 = 1
+    gamma_hh_occ22 = 1.0
     gamma_hh_occ23 = 0.357559561729431
     gamma_hh2 = [gamma_hh_occ21, gamma_hh_occ22, gamma_hh_occ23]
 
     gamma_hh_occ31 = 0.257629066705704
     gamma_hh_occ32 = 0.32952556014061
-    gamma_hh_occ33 = 1
+    gamma_hh_occ33 = 1.0
     gamma_hh3 = [gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33]
 
     p = 1
@@ -78,27 +78,27 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Q_sec2 = 1
     Q_sec3 = 1
 
-    N1 = N2 = N3 = 0.33
+    N2 = N1 = N3 = 0.33
 
-    # wages = [1, 1.944502, 1.563125]
-    #
-    # e = [0.18316, 0.67278, 2.47129]
-    #
-    # hh1_choice = [[0] * 3 for i in range(3)]
-    # hh2_choice = [[0] * 3 for i in range(3)]
-    # hh3_choice = [[0] * 3 for i in range(3)]
-    #
-    # for k in range(3):
-    #     for o in range(3):
-    #         hh1_choice[o][k] = (1 + gamma_hh1[o]) ** e[k] * wages[o]
-    #
-    # for k in range(3):
-    #     for o in range(3):
-    #         hh2_choice[o][k] = (1 + gamma_hh2[o]) ** e[k] * wages[o]
-    #
-    # for k in range(3):
-    #     for o in range(3):
-    #         hh3_choice[o][k] = (1 + gamma_hh3[o]) ** e[k] * wages[o]
+    wages = [1, 1.944502, 1.563125]
+
+    e = [0.18316, 0.67278, 2.47129]
+
+    hh1_choice = [[0] * 3 for i in range(3)]
+    hh2_choice = [[0] * 3 for i in range(3)]
+    hh3_choice = [[0] * 3 for i in range(3)]
+
+    for k in range(3):
+        for o in range(3):
+            hh1_choice[o][k] = (1 + gamma_hh1[o]) ** e[k] * wages[o]
+
+    for k in range(3):
+        for o in range(3):
+            hh2_choice[o][k] = (1 + gamma_hh2[o]) ** e[k] * wages[o]
+
+    for k in range(3):
+        for o in range(3):
+            hh3_choice[o][k] = (1 + gamma_hh3[o]) ** e[k] * wages[o]
             
 
 
@@ -121,17 +121,19 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     N_sec_occ33 = 0.517401993274688
 
 
-    w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, m1, m2, m3, N_hh_eff_1, N_hh_eff_2, N_hh_eff_3 = wage_targeting_with_gamma_power_e.out(sigma_sec1, sigma_sec2, sigma_sec3,
-                                                                                            p_sec1, p_sec2, p_sec3,
-                                                                                            Y_sec1, Y_sec2, Y_sec3,
-                                                                                            nu_sec1, nu_sec2, nu_sec3,
-                                                                                            N_sec_occ11, N_sec_occ12, N_sec_occ13,
-                                                                                            N_sec_occ21, N_sec_occ22, N_sec_occ23,
-                                                                                            N_sec_occ31, N_sec_occ32, N_sec_occ33,
-                                                                                            N1, N2, N3, pi, e_grid,
-                                                                                            gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13,
-                                                                                            gamma_hh_occ21, gamma_hh_occ22,gamma_hh_occ23,
-                                                                                            gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33)
+    w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, \
+    m1, m2, m3, N_hh_eff_1, N_hh_eff_2, \
+    N_hh_eff_3 = wage_targeting_with_gamma_power_e.out(sigma_sec1, sigma_sec2, sigma_sec3,
+                                                       p_sec1, p_sec2, p_sec3,
+                                                       Y_sec1, Y_sec2, Y_sec3,
+                                                       nu_sec1, nu_sec2, nu_sec3,
+                                                       N_sec_occ11, N_sec_occ12, N_sec_occ13,
+                                                       N_sec_occ21, N_sec_occ22, N_sec_occ23,
+                                                       N_sec_occ31, N_sec_occ32, N_sec_occ33,
+                                                       N1, N2, N3, pi, e_grid,
+                                                       gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13,
+                                                       gamma_hh_occ21, gamma_hh_occ22,gamma_hh_occ23,
+                                                       gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33)
 
 
 
@@ -187,33 +189,6 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     L_sec2 = (alpha_sec_occ21 * N_sec_occ21 ** sigma_sec2 + alpha_sec_occ22 * N_sec_occ22 ** sigma_sec2 + alpha_sec_occ23 * N_sec_occ23 ** sigma_sec2) ** (1 / sigma_sec2)
     L_sec3 = (alpha_sec_occ31 * N_sec_occ31 ** sigma_sec3 + alpha_sec_occ32 * N_sec_occ32 ** sigma_sec3 + alpha_sec_occ33 * N_sec_occ33 ** sigma_sec3) ** (1 / sigma_sec3)
 
-    '''
-    K_sec1 = nu_sec1 * Y_sec1 / (r + delta) * p_sec1 / p
-    K_sec2 = nu_sec2 * Y_sec2 / (r + delta) * p_sec2 / p
-    K_sec3 = nu_sec3 * Y_sec3 / (r + delta) * p_sec3 / p
-    '''
-    '''
-    K_sec1 = 1 / (1 + r * Q_sec1) * nu_sec1 / (1 - nu_sec1) * L_sec1 ** sigma_sec1 * (
-            w_occ1 * N_sec_occ11 ** (1 - sigma_sec1) / alpha_sec_occ11 + \
-            w_occ2 * N_sec_occ12 ** (1 - sigma_sec1) / alpha_sec_occ12 + w_occ3 * N_sec_occ13 ** (
-                    1 - sigma_sec3) / alpha_sec_occ13)
-
-    K_sec2 = 1 / (1 + r * Q_sec2) * nu_sec2 / (1 - nu_sec2) * L_sec2 ** sigma_sec2 * (
-            w_occ1 * N_sec_occ21 ** (1 - sigma_sec2) / alpha_sec_occ21 + \
-            w_occ2 * N_sec_occ22 ** (1 - sigma_sec2) / alpha_sec_occ22 + w_occ3 * N_sec_occ23 ** (
-                    1 - sigma_sec2) / alpha_sec_occ23)
-
-    K_sec3 = 1 / (1 + r * Q_sec3) * nu_sec3 / (1 - nu_sec3) * L_sec3 ** sigma_sec3 * (
-            w_occ1 * N_sec_occ31 ** (1 - sigma_sec3) / alpha_sec_occ31 + \
-            w_occ2 * N_sec_occ32 ** (1 - sigma_sec3) / alpha_sec_occ32 + w_occ3 * N_sec_occ33 ** (
-                    1 - sigma_sec3) / alpha_sec_occ33)
-    '''
-
-    #mc_sec1 = (r * Q_sec1 + delta) * K_sec1 / nu_sec1 / Y_sec1
-    #mc_sec2 = (r * Q_sec2 + delta) * K_sec2 / nu_sec2 / Y_sec2
-    #mc_sec3 = (r * Q_sec3 + delta) * K_sec3 / nu_sec3 / Y_sec3
-
-    #mc = mc_sec1 + mc_sec2 + mc_sec3
     mc = p
 
 
@@ -304,6 +279,8 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     pshare_sec2 = equity_price_sec2 / (tot_wealth - Bh)
     pshare_sec3 = equity_price_sec3 / (tot_wealth - Bh)
 
+    err6 = equity_price - equity_price_sec1 - equity_price_sec2 - equity_price_sec3
+
 
 
     # residual function
@@ -326,12 +303,12 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                                  eis=eis, rb=rb, ra=ra, chi0=chi0, chi1=chi1_loc, chi2=chi2, gamma_hh_3_1 = gamma_hh_occ31,
                                  gamma_hh_3_2 = gamma_hh_occ32, gamma_hh_3_3 = gamma_hh_occ33, m3 = m3, q_1 = q_1, q_2 = q_2, q_3 = q_3)
 
-        asset_mkt = out1['A1'] + out2['A2'] + out3['A3'] + out1['B1'] + out2['B2'] + out3['B3'] - equity_price - Bg
+        asset_mkt = m1 * out1['A1'] + m2 * out2['A2'] + m3 * out3['A3'] + m1 * out1['B1'] + m2 * out2['B2'] + m3 * out3['B3'] - equity_price - Bg
         intratemp_hh1 = vphi_loc1 * N1 ** (1/frisch) - (1 - tax) * out1['U1']
         intratemp_hh2 = vphi_loc2 * N2 ** (1/frisch) - (1 - tax) * out2['U2']
         intratemp_hh3 = vphi_loc3 * N3 ** (1/frisch) - (1 - tax) * out3['U3']
 
-        return np.array([asset_mkt, intratemp_hh1, intratemp_hh2, intratemp_hh3, out1['B1'] + out2['B2'] + out3['B3'] - Bh])
+        return np.array([asset_mkt, intratemp_hh1, intratemp_hh2, intratemp_hh3, m1 * out1['B1'] + m2 * out2['B2'] + m3 * out3['B3'] - Bh])
 
     # solve for beta, vphi, omega
     (beta, vphi1, vphi2, vphi3, chi1), _ = utils.broyden_solver(res, np.array([beta_guess, vphi_guess, vphi_guess,
@@ -363,10 +340,10 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Chi1 = np.vdot(ss1['D'], chi_hh1)
     Chi2 = np.vdot(ss2['D'], chi_hh2)
     Chi3 = np.vdot(ss3['D'], chi_hh3)
-    goods_mkt = ss1['C1'] + ss2['C2'] + ss3['C3'] + I + G + Chi1 + Chi2 + Chi3 + omega * (ss1['B1'] + ss2['B2'] + ss3['B3']) - Y
+    goods_mkt = m1 * ss1['C1'] + m2 * ss2['C2'] + m3 * ss3['C3'] + I + G + m1 * Chi1 + m2 * Chi2 + m3 * Chi3 + omega * (m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3']) - Y
 #    assert np.abs(goods_mkt) < 1E-7
-    err15 = ss1['A1'] + ss2['A2'] + ss3['A3'] + ss1['B1'] + ss2['B2'] + ss3['B3'] - 14 * Y
-    err16 = ss1["B1"] + ss2["B2"] + ss3["B3"] - 1.04 * Y
+    err15 = m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3'] + m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3'] - 14 * Y
+    err16 = m1 * ss1["B1"] + m2 * ss2["B2"] + m3 * ss3["B3"] - 1.04 * Y
     ss = ss1
 
 
@@ -437,3 +414,4 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                })
     return ss
 
+ss = hank_ss()
