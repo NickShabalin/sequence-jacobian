@@ -2,12 +2,14 @@ import utils
 import numpy as np
 from household_blocks_with_gamma_power_e import household_inc1, household_inc2, household_inc3, \
                                 income1, income2, income3, income_hh_1, income_hh_2, income_hh_3, Psi_fun
-import wage_targeting_with_gamma_power_e
+import wage_targeting_with_gamma_power_e_corrected
+# import wage_targeting_gamma_power_e_no_m
+# import shares_set_up
 
 def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0.02, kappap=0.1,
             muw=1.1, eis=0.5, frisch=1, chi0=0.25, chi2=2, epsI=4, omega=0.005, kappaw=0.1,
-            phi=1.5, nZ=3, nB=50, nA=70, nK=50, bmax=50, amax=4000, kmax=1, rho_z=0.966, sigma_z=0.92,
-            tot_wealth=14, Bh=1.04, Bg=2.8, G=0.2, noisy=True):
+            phi=1.5, nZ=3, nB=50, nA=70, nK=50, bmax=50, amax=4000, kmax=1, rho_z=0.966, sigma_z=3,
+            tot_wealth=17, Bh=1.04, Bg=2.8, G=0.2, noisy=True):
     """Solve steady state of full GE model. Calibrate (beta, vphi, chi1, alpha, mup, Z) to hit targets for
        (r, tot_wealth, Bh, K, Y=N=1).
     """
@@ -16,17 +18,11 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     b_grid = utils.agrid(amax=bmax, n=nB)
     a_grid = utils.agrid(amax=amax, n=nA)
     k_grid = utils.agrid(amax=kmax, n=nK)
-    e_grid, pi, Pi = utils.markov_rouwenhorst(rho=rho_z, sigma=sigma_z, N=nZ)
+    #e_grid, pi, Pi = utils.markov_rouwenhorst_gamma_power_e(rho=rho_z, sigma=sigma_z, N=nZ)
+    e_grid, pi, Pi = utils.markov_rouwenhorst_gamma_power_e(rho=rho_z, sigma=sigma_z, N=nZ)
 
 
-    # solve analytically what we can
-    mup = 1.001
-    #mup = 1.009861
-    #mup = 1.00648
-    #mup = 1.015
-    #mup = 1.00985
-    #mup = 1.5 # to get A + B = 14Y
-    #eta = (1 - mup) / mup
+    mup = 1.0270796595122622
     eta = mup / (mup - 1)
 
     gamma_hh_occ11 = 1.0
@@ -49,20 +45,18 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     q_1 = 1
     q_2 = 1
     q_3 = 1
-    '''
-    w_occ1 = 1
-    w_occ2 = 1.944502
-    w_occ3 = 1.563125
-    '''
-
+    Q = 1
 
     sigma_sec1 = sigma_sec2 = sigma_sec3 = 0.2
 
 
-    # new values will be here
-    f_sec1 = 0.260986566543579
-    f_sec2 = 0.343330949544907
-    f_sec3 = 0.398539662361145
+    # f_sec1 = 0.260986566543579
+    # f_sec2 = 0.343330949544907
+    # f_sec3 = 0.398539662361145
+
+    f_sec1 = 0.261
+    f_sec2 = 0.341
+    f_sec3 = 0.398
 
     Y_sec1 = f_sec1
     Y_sec2 = f_sec2
@@ -74,6 +68,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     nu_sec2 = 0.538959443569183
     nu_sec3 = 0.273549377918243
 
+
     Q_sec1 = 1
     Q_sec2 = 1
     Q_sec3 = 1
@@ -82,7 +77,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
 
     wages = [1, 1.944502, 1.563125]
 
-    e = [0.18316, 0.67278, 2.47129]
+    e = [-4.24264, 0, 4.24264]
 
     hh1_choice = [[0] * 3 for i in range(3)]
     hh2_choice = [[0] * 3 for i in range(3)]
@@ -99,7 +94,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     for k in range(3):
         for o in range(3):
             hh3_choice[o][k] = (1 + gamma_hh3[o]) ** e[k] * wages[o]
-            
+
 
 
 
@@ -108,22 +103,26 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     p_sec2 = (f_sec2 * Y / Y_sec2) ** (1 / eta) * p
     p_sec3 = (f_sec3 * Y / Y_sec3) ** (1 / eta) * p
 
-    #err1 = p - (p_sec1 ** (1 - eta) + p_sec2 ** (1 - eta) + p_sec3 ** (1 - eta)) ** (1 / (1 - eta))
+    err1 = p - (f_sec1 * p_sec1 ** (1 - eta) + f_sec2 * p_sec2 ** (1 - eta) + f_sec3 * p_sec3 ** (1 - eta)) ** (1 / (1 - eta))
 
-    N_sec_occ11 = 0.66251665353775
-    N_sec_occ12 = 0.182436376810074
-    N_sec_occ13 = 0.155046954751015
-    N_sec_occ21 = 0.372738629579544
-    N_sec_occ22 = 0.19160558283329
-    N_sec_occ23 = 0.435655802488327
-    N_sec_occ31 = 0.255537301301956
-    N_sec_occ32 = 0.227060705423355
-    N_sec_occ33 = 0.517401993274688
+    N_sec_occ11 = 0.663
+    N_sec_occ12 = 0.182
+    N_sec_occ13 = 0.155
+    N_sec_occ21 = 0.373
+    N_sec_occ22 = 0.192
+    N_sec_occ23 = 0.435
+    N_sec_occ31 = 0.256
+    N_sec_occ32 = 0.227
+    N_sec_occ33 = 0.517
+
+    mc_sec1 = 1 / mup * p_sec1 / p
+    mc_sec2 = 1 / mup * p_sec2 / p
+    mc_sec3 = 1 / mup * p_sec3 / p
 
 
     w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, \
     m1, m2, m3, N_hh_eff_1, N_hh_eff_2, \
-    N_hh_eff_3 = wage_targeting_with_gamma_power_e.out(sigma_sec1, sigma_sec2, sigma_sec3,
+    N_hh_eff_3, wage_normalizer = wage_targeting_with_gamma_power_e_corrected.out(sigma_sec1, sigma_sec2, sigma_sec3,
                                                        p_sec1, p_sec2, p_sec3,
                                                        Y_sec1, Y_sec2, Y_sec3,
                                                        nu_sec1, nu_sec2, nu_sec3,
@@ -133,7 +132,51 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                                                        N1, N2, N3, pi, e_grid,
                                                        gamma_hh_occ11, gamma_hh_occ12, gamma_hh_occ13,
                                                        gamma_hh_occ21, gamma_hh_occ22,gamma_hh_occ23,
-                                                       gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33)
+                                                       gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33,
+                                                       mc_sec1, mc_sec2, mc_sec3, p,
+                                                       r, Q, Q_sec1, Q_sec2, Q_sec3, delta, mup, Y)
+
+    # m1 = m2 = m3 = 1
+    #
+    # N_sec1, N_sec2, N_sec3 = wage_targeting_gamma_power_e_no_m.out(sigma_sec1, sigma_sec2, sigma_sec3,
+    #                                                                               p_sec1, p_sec2, p_sec3,
+    #                                                                               Y_sec1, Y_sec2, Y_sec3,
+    #                                                                               nu_sec1, nu_sec2, nu_sec3,
+    #                                                                               N_sec_occ11, N_sec_occ12, N_sec_occ13,
+    #                                                                               N_sec_occ21, N_sec_occ22, N_sec_occ23,
+    #                                                                               N_sec_occ31, N_sec_occ32, N_sec_occ33,
+    #                                                                               N1, N2, N3, pi, e_grid,
+    #                                                                               gamma_hh_occ11, gamma_hh_occ12,
+    #                                                                               gamma_hh_occ13,
+    #                                                                               gamma_hh_occ21, gamma_hh_occ22,
+    #                                                                               gamma_hh_occ23,
+    #                                                                               gamma_hh_occ31, gamma_hh_occ32,
+    #                                                                               gamma_hh_occ33,
+    #                                                                               mc_sec1, mc_sec2, mc_sec3, p,
+    #                                                                               r, Q, Q_sec1, Q_sec2, Q_sec3, delta,
+    #                                                                               mup, Y)
+
+
+
+    # import only_firms_problem
+    # w_occ1, w_occ2, w_occ3, N_sec1, N_sec2, N_sec3, \
+    # wage_normalizer = only_firms_problem.out(sigma_sec1, sigma_sec2, sigma_sec3,
+    #                                                                               p_sec1, p_sec2, p_sec3,
+    #                                                                               Y_sec1, Y_sec2, Y_sec3,
+    #                                                                               nu_sec1, nu_sec2, nu_sec3,
+    #                                                                               N_sec_occ11, N_sec_occ12, N_sec_occ13,
+    #                                                                               N_sec_occ21, N_sec_occ22, N_sec_occ23,
+    #                                                                               N_sec_occ31, N_sec_occ32, N_sec_occ33,
+    #                                                                               N1, N2, N3, pi, e_grid,
+    #                                                                               gamma_hh_occ11, gamma_hh_occ12,
+    #                                                                               gamma_hh_occ13,
+    #                                                                               gamma_hh_occ21, gamma_hh_occ22,
+    #                                                                               gamma_hh_occ23,
+    #                                                                               gamma_hh_occ31, gamma_hh_occ32,
+    #                                                                               gamma_hh_occ33,
+    #                                                                               mc_sec1, mc_sec2, mc_sec3, p,
+    #                                                                               r, Q, Q_sec1, Q_sec2, Q_sec3, delta,
+    #                                                                               mup, Y)
 
 
 
@@ -146,6 +189,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     N_sec_occ31 *= N_sec3
     N_sec_occ32 *= N_sec3
     N_sec_occ33 *= N_sec3
+
 
 
     alpha_sec_occ11 = (N_sec_occ11 ** (1 - sigma_sec1) * w_occ1) / (
@@ -189,23 +233,58 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     L_sec2 = (alpha_sec_occ21 * N_sec_occ21 ** sigma_sec2 + alpha_sec_occ22 * N_sec_occ22 ** sigma_sec2 + alpha_sec_occ23 * N_sec_occ23 ** sigma_sec2) ** (1 / sigma_sec2)
     L_sec3 = (alpha_sec_occ31 * N_sec_occ31 ** sigma_sec3 + alpha_sec_occ32 * N_sec_occ32 ** sigma_sec3 + alpha_sec_occ33 * N_sec_occ33 ** sigma_sec3) ** (1 / sigma_sec3)
 
+    # w_occ1 = mc_sec1 * Y_sec1 / L_sec1 * (1 - nu_sec1) * alpha_sec_occ11 * (L_sec1 / N_sec_occ11) ** (
+    #         1 - sigma_sec1)
+    # w_occ2 = mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ22 * (L_sec2 / N_sec_occ22) ** (
+    #         1 - sigma_sec2)
+    # w_occ3 = mc_sec3 * Y_sec3 / L_sec3 * (1 - nu_sec3) * alpha_sec_occ33 * (L_sec3 / N_sec_occ33) ** (
+    #         1 - sigma_sec3)
+
     mc = p
 
+    err20 = w_occ1 - mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ21 * (L_sec2 / N_sec_occ21) ** (
+                1 - sigma_sec2)
+    err21 = w_occ1 - mc_sec3 * Y_sec3 / L_sec3 * (1 - nu_sec3) * alpha_sec_occ31 * (L_sec3 / N_sec_occ31) ** (
+            1 - sigma_sec3)
+    err22 = w_occ2 - mc_sec3 * Y_sec3 / L_sec3 * (1 - nu_sec3) * alpha_sec_occ32 * (L_sec3 / N_sec_occ32) ** (
+            1 - sigma_sec3)
+    err23 = w_occ2 - mc_sec1 * Y_sec1 / L_sec1 * (1 - nu_sec1) * alpha_sec_occ12 * (L_sec1 / N_sec_occ12) ** (
+            1 - sigma_sec1)
+    err24 = w_occ3 - mc_sec1 * Y_sec1 / L_sec1 * (1 - nu_sec1) * alpha_sec_occ13 * (L_sec1 / N_sec_occ13) ** (
+            1 - sigma_sec1)
+    err25 = w_occ3 - mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ23 * (L_sec2 / N_sec_occ23) ** (
+            1 - sigma_sec2)
 
-    mc_sec1 = 1 / mup * p_sec1 / p
-    mc_sec2 = 1 / mup * p_sec2 / p
-    mc_sec3 = 1 / mup * p_sec3 / p
+    err26 = w_occ1 * N_sec_occ21 - mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ21 * L_sec2 ** (
+            1 - sigma_sec2) * N_sec_occ21 ** sigma_sec2
+
+    err27 = w_occ1 * N_sec_occ21 + w_occ2 * N_sec_occ22 - mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ21 * L_sec2 ** (
+            1 - sigma_sec2) * N_sec_occ21 ** sigma_sec2 - mc_sec2 * Y_sec2 / L_sec2 * (1 - nu_sec2) * alpha_sec_occ22 * L_sec2 ** (1 - sigma_sec2) * N_sec_occ22 ** sigma_sec2
+
+    err13 = w_occ1 * N_sec_occ11 + w_occ2 * N_sec_occ12 + w_occ3 * N_sec_occ13 - mc_sec1 * Y_sec1 * (1 - nu_sec1)
+    err14 = w_occ1 * N_sec_occ21 + w_occ2 * N_sec_occ22 + w_occ3 * N_sec_occ23 - mc_sec2 * Y_sec2 * (1 - nu_sec2)
+    err15 = w_occ1 * N_sec_occ31 + w_occ2 * N_sec_occ32 + w_occ3 * N_sec_occ33 - mc_sec3 * Y_sec3 * (1 - nu_sec3)
 
     K_sec1 = nu_sec1 * Y_sec1 * mc_sec1 / (r * Q_sec1 + delta)
     K_sec2 = nu_sec2 * Y_sec2 * mc_sec2 / (r * Q_sec2 + delta)
     K_sec3 = nu_sec3 * Y_sec3 * mc_sec3 / (r * Q_sec3 + delta)
 
-    Q = 1
 
     ra = r
     rb = r - omega
 
     K = K_sec1 + K_sec2 + K_sec3
+
+    err13 = w_occ1 * (N_sec_occ11 + N_sec_occ21 + N_sec_occ31) + \
+            w_occ2 * (N_sec_occ12 + N_sec_occ22 + N_sec_occ32) + \
+            w_occ3 * (N_sec_occ13 + N_sec_occ23 + N_sec_occ33) - \
+            mc_sec1 * Y_sec1 * (1 - nu_sec1) - \
+            mc_sec2 * Y_sec2 * (1 - nu_sec2) - \
+            mc_sec3 * Y_sec3 * (1 - nu_sec3)
+
+    err16 = 1 / mup * Y - (r * Q + delta) * K - w_occ1 * (N_sec_occ11 + N_sec_occ21 + N_sec_occ31) - \
+             w_occ2 * (N_sec_occ12 + N_sec_occ22 + N_sec_occ32) - \
+             w_occ3 * (N_sec_occ13 + N_sec_occ23 + N_sec_occ33)
 
     I_sec1 = delta * K_sec1
     I_sec2 = delta * K_sec2
@@ -228,6 +307,11 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     w_sec1 = (w_occ1 * N_sec_occ11 + w_occ2 * N_sec_occ12 + w_occ3 * N_sec_occ13) / N_sec1
     w_sec2 = (w_occ1 * N_sec_occ21 + w_occ2 * N_sec_occ22 + w_occ3 * N_sec_occ23) / N_sec2
     w_sec3 = (w_occ1 * N_sec_occ31 + w_occ2 * N_sec_occ32 + w_occ3 * N_sec_occ33) / N_sec3
+    
+    err2 = mc_sec1 - w_sec1 * N_sec1 - I_sec1 - r * K_sec1
+    err3 = mc_sec2 - w_sec2 * N_sec2 - I_sec2 - r * K_sec2
+    err4 = mc_sec3 - w_sec3 * N_sec3 - I_sec3 - r * K_sec3
+
 
     N = N_sec1 + N_sec2 + N_sec3
 
@@ -255,13 +339,6 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Va3 = (0.6 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
     Vb3 = (0.5 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
 
-    '''
-    mc_sec1 = w_sec1 * (N_sec_occ11 + N_sec_occ12 + N_sec_occ13) / (1 - nu_sec1) / Y_sec1
-    mc_sec2 = w_sec2 * (N_sec_occ21 + N_sec_occ22 + N_sec_occ23) / (1 - nu_sec2) / Y_sec2
-    mc_sec3 = w_sec3 * (N_sec_occ31 + N_sec_occ32 + N_sec_occ33) / (1 - nu_sec3) / Y_sec3
-    mc = mc_sec1 + mc_sec2 + mc_sec3
-    '''
-
     div_sec1 = Y_sec1 * p_sec1 - w_sec1 * N_sec1 - I_sec1
     div_sec2 = Y_sec2 * p_sec2 - w_sec2 * N_sec2 - I_sec2
     div_sec3 = Y_sec3 * p_sec3 - w_sec3 * N_sec3 - I_sec3
@@ -278,6 +355,9 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     pshare_sec1 = equity_price_sec1 / (tot_wealth - Bh)
     pshare_sec2 = equity_price_sec2 / (tot_wealth - Bh)
     pshare_sec3 = equity_price_sec3 / (tot_wealth - Bh)
+
+
+    err_goods2 = sum(pi * z1_grid * m1 + pi * z2_grid * m2 + pi * z3_grid * m3) - w * N * (1 - tax)
 
     err6 = equity_price - equity_price_sec1 - equity_price_sec2 - equity_price_sec3
 
@@ -342,10 +422,12 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Chi3 = np.vdot(ss3['D'], chi_hh3)
     goods_mkt = m1 * ss1['C1'] + m2 * ss2['C2'] + m3 * ss3['C3'] + I + G + m1 * Chi1 + m2 * Chi2 + m3 * Chi3 + omega * (m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3']) - Y
 #    assert np.abs(goods_mkt) < 1E-7
-    err15 = m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3'] + m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3'] - 14 * Y
+    err15 = m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3'] + m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3'] - tot_wealth * Y
     err16 = m1 * ss1["B1"] + m2 * ss2["B2"] + m3 * ss3["B3"] - 1.04 * Y
     ss = ss1
 
+    err_goods1 = ss1['C1'] * m1 + ss2['C2'] * m2 + ss3['C3'] * m3 - ra * (m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3']) - rb * ( m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3']) + m1 * Chi1 + m2 * Chi2 + m3 * Chi3 - w * N * (1 - tax)
+    err_goods2 = sum(pi * z1_grid * m1 + pi * z2_grid * m2 + pi * z3_grid * m3) - w * N * (1 - tax)
 
     ss.update({'pi': 0, 'piw': 0, 'Q': Q, 'Y': Y, 'mc': mc, 'K': K, 'I': I, 'tax': tax,
                'r': r, 'Bg': Bg, 'G': G, 'Chi': Chi1 + Chi2 + Chi3, 'chi': chi_hh1 + chi_hh2 + chi_hh3, 'phi': phi,
@@ -414,4 +496,4 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                })
     return ss
 
-ss = hank_ss()
+#ss = hank_ss()
