@@ -330,14 +330,14 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     z2_grid = income_hh_2(q_1, q_2, q_3, e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh_occ21, gamma_hh_occ22, gamma_hh_occ23, m2, N_hh_occ21, N_hh_occ22, N_hh_occ23)
     z3_grid = income_hh_3(q_1, q_2, q_3, e_grid, tax, w_occ1, w_occ2, w_occ3, gamma_hh_occ31, gamma_hh_occ32, gamma_hh_occ33, m3, N_hh_occ31, N_hh_occ32, N_hh_occ33)
 
-    Va1 = (0.6 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
-    Vb1 = (0.5 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
+    Va1 = (1.3 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
+    Vb1 = (1.2 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z1_grid.shape[0], 1, 1))
 
-    Va2 = (0.6 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z2_grid.shape[0], 1, 1))
-    Vb2 = (0.5 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z2_grid.shape[0], 1, 1))
+    Va2 = (2.7 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z2_grid.shape[0], 1, 1))
+    Vb2 = (2.6 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z2_grid.shape[0], 1, 1))
 
-    Va3 = (0.6 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
-    Vb3 = (0.5 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
+    Va3 = (2.1 + 1.1 * b_grid[:, np.newaxis] + a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
+    Vb3 = (2.0 + b_grid[:, np.newaxis] + 1.2 * a_grid) ** (-1 / eis) * np.ones((z3_grid.shape[0], 1, 1))
 
     div_sec1 = Y_sec1 * p_sec1 - w_sec1 * N_sec1 - I_sec1
     div_sec2 = Y_sec2 * p_sec2 - w_sec2 * N_sec2 - I_sec2
@@ -421,7 +421,7 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     Chi2 = np.vdot(ss2['D'], chi_hh2)
     Chi3 = np.vdot(ss3['D'], chi_hh3)
     goods_mkt = m1 * ss1['C1'] + m2 * ss2['C2'] + m3 * ss3['C3'] + I + G + m1 * Chi1 + m2 * Chi2 + m3 * Chi3 + omega * (m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3']) - Y
-#    assert np.abs(goods_mkt) < 1E-7
+    assert np.abs(goods_mkt) < 1E-7
     err15 = m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3'] + m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3'] - tot_wealth * Y
     err16 = m1 * ss1["B1"] + m2 * ss2["B2"] + m3 * ss3["B3"] - 1.04 * Y
     ss = ss1
@@ -429,15 +429,16 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
     err_goods1 = ss1['C1'] * m1 + ss2['C2'] * m2 + ss3['C3'] * m3 - ra * (m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3']) - rb * ( m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3']) + m1 * Chi1 + m2 * Chi2 + m3 * Chi3 - w * N * (1 - tax)
     err_goods2 = sum(pi * z1_grid * m1 + pi * z2_grid * m2 + pi * z3_grid * m3) - w * N * (1 - tax)
 
+
     ss.update({'pi': 0, 'piw': 0, 'Q': Q, 'Y': Y, 'mc': mc, 'K': K, 'I': I, 'tax': tax,
                'r': r, 'Bg': Bg, 'G': G, 'Chi': Chi1 + Chi2 + Chi3, 'chi': chi_hh1 + chi_hh2 + chi_hh3, 'phi': phi,
                'beta': beta, 'vphi_1': vphi1, 'vphi_2': vphi2, 'vphi_3': vphi3, 'omega': omega, 'delta': delta, 'muw': muw,
                'frisch': frisch, 'epsI': epsI, 'a_grid': a_grid, 'b_grid': b_grid, 'z_grid': z1_grid + z2_grid + z3_grid, 'e_grid': e_grid,
                'k_grid': k_grid, 'Pi': Pi, 'kappap': kappap, 'kappaw': kappaw, 'rstar': r, 'i': r, 'w': w,
                'p': p, 'mup': mup, 'eta': eta, 'ra': ra, 'rb': rb, 'beta_sir': 1.5, 'gamma_sir': 0.8, 'covid_shock': 0,
-               'susceptible': 1, 'infected': 0, 'recovered': 0,
+               'susceptible': 1, 'infected': 0, 'recovered': 0, 'D1': ss1['D'], 'D2': ss2['D'], 'D3': ss3['D'],
 
-                'C': ss1['C1'] + ss2['C2'] + ss3['C3'], 'A': ss1['A1'] + ss2['A2'] + ss3['A3'], 'B': ss1['B1'] + ss2['B2'] + ss3['B3'], 'U': ss1['U1'] + ss2['U2'] + ss3['U3'],
+                'C': m1 * ss1['C1'] + m2 * ss2['C2'] + m3 * ss3['C3'], 'A': m1 * ss1['A1'] + m2 * ss2['A2'] + m3 * ss3['A3'], 'B': m1 * ss1['B1'] + m2 * ss2['B2'] + m3 * ss3['B3'], 'U': m1 * ss1['U1'] + m2 * ss2['U2'] + m3 * ss3['U3'],
 
                'Vb2': ss2['Vb2'], 'Va2': ss2['Va2'], 'b2_grid': ss2['b2_grid'], 'A2': ss2['A2'], 'B2': ss2['B2'], 'U2': ss2['U2'],
                'a2_grid': ss2['a2_grid'], 'b2': ss2['b2'], 'a2': ss2['a2'], 'c2': ss2['c2'], 'u2': ss2['u2'], 'C2': ss2['C2'],
@@ -490,10 +491,8 @@ def hank_ss(beta_guess=0.976, vphi_guess=2.07, chi1_guess=6.5, r=0.0125, delta=0
                'pi_distribution_1': pi[0], 'pi_distribution_2': pi[1], 'pi_distribution_3': pi[2],
                'q': q, 'q_1': q_1, 'q_2': q_2, 'q_3': q_3,
 
-               'f_sec_1': f_sec1, 'f_sec_2': f_sec2, 'f_sec_3': f_sec3
+               'f_sec_1': f_sec1, 'f_sec_2': f_sec2, 'f_sec_3': f_sec3, 'tot_wealth': tot_wealth
 
 
                })
     return ss
-
-#ss = hank_ss()
