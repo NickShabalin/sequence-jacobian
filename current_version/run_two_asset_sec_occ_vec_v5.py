@@ -26,10 +26,10 @@ T = 300
 
 block_list = [consumers_aggregator, household_inc1, household_inc2,
               household_inc3, dividend, arbitrage, dividend_agg,
-              taylor, fiscal, finance, production, asset_mkt_clearing]
+              taylor, fiscal, finance, production, asset_mkt_clearing, sir_block]
 
 exogenous = ['rstar', 'G', 'productivity_sec_1', 'productivity_sec_2',
-             'productivity_sec_3', 'susceptible', 'infected', 'recovered']
+             'productivity_sec_3', 'covid_shock']
 
 unknowns = ['r', 'p', 'equity_price_sec_1',
             'equity_price_sec_2', 'equity_price_sec_3']
@@ -38,28 +38,45 @@ targets = ['fisher',
            'equity_1', 'equity_2', 'equity_3', 'asset_mkt']
 
 #calculate A and G
-A = jac.get_H_U(block_list, unknowns, targets, T, ss, asymptotic=True, save=True)
-wn = det.winding_criterion(A)
-print(f'Winding number: {wn}')
+# A = jac.get_H_U(block_list, unknowns, targets, T, ss, asymptotic=True, save=True)
+# wn = det.winding_criterion(A)
+# print(f'Winding number: {wn}')
 
 G = jac.get_G(block_list, exogenous, unknowns, targets, T=T, ss=ss, use_saved=False)
 
-rhos = np.array([0.8])
-#drstar = -0.0025 * rhos ** (np.arange(T)[:, np.newaxis])
-drstar = 0.0 * rhos ** (np.arange(T)[:, np.newaxis])
+# rhos = np.array([0.8])
+# drstar = -0.00025 * rhos ** (np.arange(T)[:, np.newaxis])
+#drstar = 0.0 * rhos ** (np.arange(T)[:, np.newaxis])
 
-# rhos = np.array([0.0, 0.1])
-# dcovid = 0.00001 * rhos ** (np.arange(T)[:, np.newaxis])
+# rhos = np.array([0.8])
+# dG = 0.001 * rhos ** (np.arange(T)[:, np.newaxis])
+
+# rhos = np.array([0.2, 0.6, 0.8])
+# dproductivity_sec_2 = -0.0007 * rhos ** (np.arange(T)[:, np.newaxis])
+
+
+rhos = np.array([0.0, 0.1])
+dcovid = 0.000001 * rhos ** (np.arange(T)[:, np.newaxis])
+
 #
+# td_nonlin = nonlinear.td_solve(ss, block_list, unknowns, targets,
+#                                rstar=ss['rstar']+drstar[:,0], use_saved=False)
+
+# td_nonlin = nonlinear.td_solve(ss, block_list, unknowns, targets,
+#                                productivity_sec_2=ss['productivity_sec_2']+dproductivity_sec_2[:,0], use_saved=False)
+
+# td_nonlin = nonlinear.td_solve(ss, block_list, unknowns, targets,
+#                                G=ss['G']+dG[:,0], use_saved=False)
+
+
+
+
 td_nonlin = nonlinear.td_solve(ss, block_list, unknowns, targets,
-                               rstar=ss['rstar']+drstar[:,0], use_saved=False)
-
-
-
+                               covid_shock=ss['covid_shock']+dcovid[:,0], use_saved=False)
 
 
 # td_nonlin = nonlinear.td_solve(ss, block_list, unknowns, targets,
-#                                covid_shock=ss['covid_shock']+dcovid[:,0], use_saved=True)
+#                                infected=ss['infected']+infected, use_saved=True)
 
 
 ##################################################################################################################
@@ -69,735 +86,170 @@ plt.style.use('seaborn-darkgrid')
 palette = plt.get_cmap('summer')
 plt.rcParams["figure.titlesize"] = 'xx-large'
 
-# graphs: mp shock
-rhos = np.array([0.8])
-drstar = -0.0025 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['rstar'] @ drstar
-dN = td_nonlin['N']['rstar'] @ drstar
-di = td_nonlin['i']['rstar'] @ drstar
-dC = td_nonlin['C']['rstar'] @ drstar
+dY_nonlin = 100 * ((td_nonlin['Y'] - ss['Y']) / ss['Y'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 25 bp monetary policy shock (easing)')
-axs[0, 0].plot(dY[:25])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:25])
-axs[0, 1].set_title('CB rate')
-axs[1, 0].plot(dN[:25])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('Consumption')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Output response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-rhos = np.array([0.8])
-drstar = -0.0025 * rhos ** (np.arange(T)[:, np.newaxis])
-dC1 = td_nonlin['C1']['rstar'] @ drstar
-dC2 = td_nonlin['C2']['rstar'] @ drstar
-dC3 = td_nonlin['C3']['rstar'] @ drstar
-dC = td_nonlin['C']['rstar'] @ drstar
+dY_nonlin = 100 * ((td_nonlin['C'] - ss['C']) / ss['C'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 25 bp monetary policy shock (easing)')
-axs[0, 0].plot(dC1[:25])
-axs[0, 0].set_title('consumption 1 hh')
-axs[0, 1].plot(dC2[:25])
-axs[0, 1].set_title('consumption 2 hh')
-axs[1, 0].plot(dC3[:25])
-axs[1, 0].set_title('consumption 3 hh')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('consumption aggregate')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Consumption response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-# graphs: productivity shock in sec 1
-rhos = np.array([0.2, 0.6, 0.8])
-dproductivity_sec_1 = -0.07 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['productivity_sec_1'] @ dproductivity_sec_1
-dN = td_nonlin['N']['productivity_sec_1'] @ dproductivity_sec_1
-di = td_nonlin['i']['productivity_sec_1'] @ dproductivity_sec_1
-dC = td_nonlin['C']['productivity_sec_1'] @ dproductivity_sec_1
+dY_nonlin = 100 * ((td_nonlin['N'] - ss['N']) / ss['N'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 1')
-axs[0, 0].plot(dY[:25])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:25])
-axs[0, 1].set_title('CB rate')
-axs[1, 0].plot(dN[:25])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('Consumption')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Labor hours response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
+dY_nonlin = 100 * ((td_nonlin['I'] - ss['I']) / ss['I'])
 
-dN_1_1 = td_nonlin['N_occ_sec_1_1']['productivity_sec_1'] @ dproductivity_sec_1
-dN_1_2 = td_nonlin['N_occ_sec_1_2']['productivity_sec_1'] @ dproductivity_sec_1
-dN_1_3 = td_nonlin['N_occ_sec_1_3']['productivity_sec_1'] @ dproductivity_sec_1
-dN_2_1 = td_nonlin['N_occ_sec_2_1']['productivity_sec_1'] @ dproductivity_sec_1
-dN_2_2 = td_nonlin['N_occ_sec_2_2']['productivity_sec_1'] @ dproductivity_sec_1
-dN_2_3 = td_nonlin['N_occ_sec_2_3']['productivity_sec_1'] @ dproductivity_sec_1
-dN_3_1 = td_nonlin['N_occ_sec_3_1']['productivity_sec_1'] @ dproductivity_sec_1
-dN_3_2 = td_nonlin['N_occ_sec_3_2']['productivity_sec_1'] @ dproductivity_sec_1
-dN_3_3 = td_nonlin['N_occ_sec_3_3']['productivity_sec_1'] @ dproductivity_sec_1
-
-fig, axs = plt.subplots(3, 3, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 1')
-axs[0, 0].plot(dN_1_1[:25])
-axs[0, 0].set_title('N sec 1 occ 1')
-axs[0, 1].plot(dN_1_2[:25])
-axs[0, 1].set_title('N sec 2 occ 1')
-axs[0, 2].plot(dN_1_3[:25])
-axs[0, 2].set_title('N sec 3 occ 1')
-
-axs[1, 0].plot(dN_2_1[:25])
-axs[1, 0].set_title('N sec 1 occ 2')
-axs[1, 1].plot(dN_2_2[:25])
-axs[1, 1].set_title('N sec 2 occ 2')
-axs[1, 2].plot(dN_2_3[:25])
-axs[1, 2].set_title('N sec 3 occ 2')
-
-axs[2, 0].plot(dN_3_1[:25])
-axs[2, 0].set_title('N sec 1 occ 3')
-axs[2, 1].plot(dN_3_2[:25])
-axs[2, 1].set_title('N sec 2 occ 3')
-axs[2, 2].plot(dN_3_3[:25])
-axs[2, 2].set_title('N sec 3 occ 3')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Investments response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
+dY_nonlin = (td_nonlin['i'] - ss['i'])
 
-dz_grid_1_1_1 = td_nonlin['z_grid_1_1_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_1']
-dz_grid_1_1_2 = td_nonlin['z_grid_1_1_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_1']
-dz_grid_1_1_3 = td_nonlin['z_grid_1_1_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_1']
-dz_grid_2_1_1 = td_nonlin['z_grid_2_1_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_1']
-dz_grid_2_1_2 = td_nonlin['z_grid_2_1_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_1']
-dz_grid_2_1_3 = td_nonlin['z_grid_2_1_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_1']
-dz_grid_3_1_1 = td_nonlin['z_grid_3_1_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_1']
-dz_grid_3_1_2 = td_nonlin['z_grid_3_1_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_1']
-dz_grid_3_1_3 = td_nonlin['z_grid_3_1_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_1']
-
-dz_grid_1_2_1 = td_nonlin['z_grid_1_2_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_2']
-dz_grid_1_2_2 = td_nonlin['z_grid_1_2_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_2']
-dz_grid_1_2_3 = td_nonlin['z_grid_1_2_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_2']
-dz_grid_2_2_1 = td_nonlin['z_grid_2_2_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_2']
-dz_grid_2_2_2 = td_nonlin['z_grid_2_2_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_2']
-dz_grid_2_2_3 = td_nonlin['z_grid_2_2_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_2']
-dz_grid_3_2_1 = td_nonlin['z_grid_3_2_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_2']
-dz_grid_3_2_2 = td_nonlin['z_grid_3_2_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_2']
-dz_grid_3_2_3 = td_nonlin['z_grid_3_2_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_2']
-
-
-dz_grid_1_3_1 = td_nonlin['z_grid_1_3_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_3']
-dz_grid_1_3_2 = td_nonlin['z_grid_1_3_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_3']
-dz_grid_1_3_3 = td_nonlin['z_grid_1_3_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_3']
-dz_grid_2_3_1 = td_nonlin['z_grid_2_3_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_3']
-dz_grid_2_3_2 = td_nonlin['z_grid_2_3_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_3']
-dz_grid_2_3_3 = td_nonlin['z_grid_2_3_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_3']
-dz_grid_3_3_1 = td_nonlin['z_grid_3_3_1']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_3']
-dz_grid_3_3_2 = td_nonlin['z_grid_3_3_2']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_3']
-dz_grid_3_3_3 = td_nonlin['z_grid_3_3_3']['productivity_sec_1'] @ dproductivity_sec_1[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_3']
-
-#plots
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the least productive')
-axs[0, 0].plot(dz_grid_1_1_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_1_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_1_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_1_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_1_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_1_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_1_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_1_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_1_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Monetary policy interest rate response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('deviation from ss')
+plt.legend()
 plt.show()
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the middle one')
-axs[0, 0].plot(dz_grid_1_2_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_2_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_2_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_2_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_2_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_2_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_2_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_2_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_2_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+dY_nonlin = (td_nonlin['pi'] - ss['pi'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Inflation response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('deviation from ss')
+plt.legend()
 plt.show()
 
+dY_nonlin = (td_nonlin['susceptible'] - ss['susceptible'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the most productive')
-axs[0, 0].plot(dz_grid_1_3_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_3_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_3_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_3_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_3_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_3_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_3_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_3_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_3_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Susceptible')
+plt.xlabel('quarters')
+plt.ylabel('deviation from ss')
+plt.legend()
 plt.show()
 
-# graphs: productivity shock in sec 2
-rhos = np.array([0.2, 0.6, 0.8])
-dproductivity_sec_2 = -0.04 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['productivity_sec_2'] @ dproductivity_sec_2
-dN = td_nonlin['N']['productivity_sec_2'] @ dproductivity_sec_2
-di = td_nonlin['i']['productivity_sec_2'] @ dproductivity_sec_2
-dC = td_nonlin['C']['productivity_sec_2'] @ dproductivity_sec_2
+dY_nonlin = (td_nonlin['infected'] - ss['infected'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 2')
-axs[0, 0].plot(dY[:25])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:25])
-axs[0, 1].set_title('CB rate')
-axs[1, 0].plot(dN[:25])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('Consumption')
-plt.show()
-
-
-dN_1_1 = td_nonlin['N_occ_sec_1_1']['productivity_sec_2'] @ dproductivity_sec_2
-dN_1_2 = td_nonlin['N_occ_sec_1_2']['productivity_sec_2'] @ dproductivity_sec_2
-dN_1_3 = td_nonlin['N_occ_sec_1_3']['productivity_sec_2'] @ dproductivity_sec_2
-dN_2_1 = td_nonlin['N_occ_sec_2_1']['productivity_sec_2'] @ dproductivity_sec_2
-dN_2_2 = td_nonlin['N_occ_sec_2_2']['productivity_sec_2'] @ dproductivity_sec_2
-dN_2_3 = td_nonlin['N_occ_sec_2_3']['productivity_sec_2'] @ dproductivity_sec_2
-dN_3_1 = td_nonlin['N_occ_sec_3_1']['productivity_sec_2'] @ dproductivity_sec_2
-dN_3_2 = td_nonlin['N_occ_sec_3_2']['productivity_sec_2'] @ dproductivity_sec_2
-dN_3_3 = td_nonlin['N_occ_sec_3_3']['productivity_sec_2'] @ dproductivity_sec_2
-
-fig, axs = plt.subplots(3, 3, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 2')
-axs[0, 0].plot(dN_1_1[:25])
-axs[0, 0].set_title('N sec 1 occ 1')
-axs[0, 1].plot(dN_1_2[:25])
-axs[0, 1].set_title('N sec 2 occ 1')
-axs[0, 2].plot(dN_1_3[:25])
-axs[0, 2].set_title('N sec 3 occ 1')
-
-axs[1, 0].plot(dN_2_1[:25])
-axs[1, 0].set_title('N sec 1 occ 2')
-axs[1, 1].plot(dN_2_2[:25])
-axs[1, 1].set_title('N sec 2 occ 2')
-axs[1, 2].plot(dN_2_3[:25])
-axs[1, 2].set_title('N sec 3 occ 2')
-
-axs[2, 0].plot(dN_3_1[:25])
-axs[2, 0].set_title('N sec 1 occ 3')
-axs[2, 1].plot(dN_3_2[:25])
-axs[2, 1].set_title('N sec 2 occ 3')
-axs[2, 2].plot(dN_3_3[:25])
-axs[2, 2].set_title('N sec 3 occ 3')
-plt.show()
-
-dz_grid_1_1_1 = td_nonlin['z_grid_1_1_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_1']
-dz_grid_1_1_2 = td_nonlin['z_grid_1_1_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_1']
-dz_grid_1_1_3 = td_nonlin['z_grid_1_1_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_1']
-dz_grid_2_1_1 = td_nonlin['z_grid_2_1_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_1']
-dz_grid_2_1_2 = td_nonlin['z_grid_2_1_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_1']
-dz_grid_2_1_3 = td_nonlin['z_grid_2_1_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_1']
-dz_grid_3_1_1 = td_nonlin['z_grid_3_1_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_1']
-dz_grid_3_1_2 = td_nonlin['z_grid_3_1_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_1']
-dz_grid_3_1_3 = td_nonlin['z_grid_3_1_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_1']
-
-dz_grid_1_2_1 = td_nonlin['z_grid_1_2_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_2']
-dz_grid_1_2_2 = td_nonlin['z_grid_1_2_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_2']
-dz_grid_1_2_3 = td_nonlin['z_grid_1_2_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_2']
-dz_grid_2_2_1 = td_nonlin['z_grid_2_2_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_2']
-dz_grid_2_2_2 = td_nonlin['z_grid_2_2_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_2']
-dz_grid_2_2_3 = td_nonlin['z_grid_2_2_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_2']
-dz_grid_3_2_1 = td_nonlin['z_grid_3_2_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_2']
-dz_grid_3_2_2 = td_nonlin['z_grid_3_2_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_2']
-dz_grid_3_2_3 = td_nonlin['z_grid_3_2_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_2']
-
-
-dz_grid_1_3_1 = td_nonlin['z_grid_1_3_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_3']
-dz_grid_1_3_2 = td_nonlin['z_grid_1_3_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_3']
-dz_grid_1_3_3 = td_nonlin['z_grid_1_3_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_3']
-dz_grid_2_3_1 = td_nonlin['z_grid_2_3_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_3']
-dz_grid_2_3_2 = td_nonlin['z_grid_2_3_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_3']
-dz_grid_2_3_3 = td_nonlin['z_grid_2_3_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_3']
-dz_grid_3_3_1 = td_nonlin['z_grid_3_3_1']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_3']
-dz_grid_3_3_2 = td_nonlin['z_grid_3_3_2']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_3']
-dz_grid_3_3_3 = td_nonlin['z_grid_3_3_3']['productivity_sec_2'] @ dproductivity_sec_2[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_3']
-
-#plots
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 2 of the least productive')
-axs[0, 0].plot(dz_grid_1_1_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_1_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_1_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_1_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_1_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_1_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_1_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_1_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_1_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 2 of the middle one')
-axs[0, 0].plot(dz_grid_1_2_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_2_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_2_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_2_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_2_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_2_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_2_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_2_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_2_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 2 of the most productive')
-axs[0, 0].plot(dz_grid_1_3_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_3_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_3_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_3_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_3_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_3_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_3_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_3_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_3_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-# graphs: productivity shock in sec 3
-rhos = np.array([0.2, 0.6, 0.8])
-dproductivity_sec_3 = -0.06 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['productivity_sec_3'] @ dproductivity_sec_3
-dN = td_nonlin['N']['productivity_sec_3'] @ dproductivity_sec_3
-di = td_nonlin['i']['productivity_sec_3'] @ dproductivity_sec_3
-dC = td_nonlin['C']['productivity_sec_3'] @ dproductivity_sec_3
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 3')
-axs[0, 0].plot(dY[:25])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:25])
-axs[0, 1].set_title('CB rate')
-axs[1, 0].plot(dN[:25])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('Consumption')
-plt.show()
-
-
-dN_1_1 = td_nonlin['N_occ_sec_1_1']['productivity_sec_3'] @ dproductivity_sec_3
-dN_1_2 = td_nonlin['N_occ_sec_1_2']['productivity_sec_3'] @ dproductivity_sec_3
-dN_1_3 = td_nonlin['N_occ_sec_1_3']['productivity_sec_3'] @ dproductivity_sec_3
-dN_2_1 = td_nonlin['N_occ_sec_2_1']['productivity_sec_3'] @ dproductivity_sec_3
-dN_2_2 = td_nonlin['N_occ_sec_2_2']['productivity_sec_3'] @ dproductivity_sec_3
-dN_2_3 = td_nonlin['N_occ_sec_2_3']['productivity_sec_3'] @ dproductivity_sec_3
-dN_3_1 = td_nonlin['N_occ_sec_3_1']['productivity_sec_3'] @ dproductivity_sec_3
-dN_3_2 = td_nonlin['N_occ_sec_3_2']['productivity_sec_3'] @ dproductivity_sec_3
-dN_3_3 = td_nonlin['N_occ_sec_3_3']['productivity_sec_3'] @ dproductivity_sec_3
-
-
-fig, axs = plt.subplots(3, 3, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp negative productivity shock in sector 3')
-axs[0, 0].plot(dN_1_1[:25])
-axs[0, 0].set_title('N sec 1 occ 1')
-axs[0, 1].plot(dN_1_2[:25])
-axs[0, 1].set_title('N sec 2 occ 1')
-axs[0, 2].plot(dN_1_3[:25])
-axs[0, 2].set_title('N sec 3 occ 1')
-
-axs[1, 0].plot(dN_2_1[:25])
-axs[1, 0].set_title('N sec 1 occ 2')
-axs[1, 1].plot(dN_2_2[:25])
-axs[1, 1].set_title('N sec 2 occ 2')
-axs[1, 2].plot(dN_2_3[:25])
-axs[1, 2].set_title('N sec 3 occ 2')
-
-axs[2, 0].plot(dN_3_1[:25])
-axs[2, 0].set_title('N sec 1 occ 3')
-axs[2, 1].plot(dN_3_2[:25])
-axs[2, 1].set_title('N sec 2 occ 3')
-axs[2, 2].plot(dN_3_3[:25])
-axs[2, 2].set_title('N sec 3 occ 3')
-plt.show()
-
-
-dz_grid_1_1_1 = td_nonlin['z_grid_1_1_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_1']
-dz_grid_1_1_2 = td_nonlin['z_grid_1_1_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_1']
-dz_grid_1_1_3 = td_nonlin['z_grid_1_1_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_1']
-dz_grid_2_1_1 = td_nonlin['z_grid_2_1_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_1']
-dz_grid_2_1_2 = td_nonlin['z_grid_2_1_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_1']
-dz_grid_2_1_3 = td_nonlin['z_grid_2_1_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_1']
-dz_grid_3_1_1 = td_nonlin['z_grid_3_1_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_1']
-dz_grid_3_1_2 = td_nonlin['z_grid_3_1_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_1']
-dz_grid_3_1_3 = td_nonlin['z_grid_3_1_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_1']
-
-dz_grid_1_2_1 = td_nonlin['z_grid_1_2_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_2']
-dz_grid_1_2_2 = td_nonlin['z_grid_1_2_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_2']
-dz_grid_1_2_3 = td_nonlin['z_grid_1_2_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_2']
-dz_grid_2_2_1 = td_nonlin['z_grid_2_2_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_2']
-dz_grid_2_2_2 = td_nonlin['z_grid_2_2_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_2']
-dz_grid_2_2_3 = td_nonlin['z_grid_2_2_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_2']
-dz_grid_3_2_1 = td_nonlin['z_grid_3_2_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_2']
-dz_grid_3_2_2 = td_nonlin['z_grid_3_2_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_2']
-dz_grid_3_2_3 = td_nonlin['z_grid_3_2_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_2']
-
-
-dz_grid_1_3_1 = td_nonlin['z_grid_1_3_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_3']
-dz_grid_1_3_2 = td_nonlin['z_grid_1_3_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_3']
-dz_grid_1_3_3 = td_nonlin['z_grid_1_3_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_3']
-dz_grid_2_3_1 = td_nonlin['z_grid_2_3_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_3']
-dz_grid_2_3_2 = td_nonlin['z_grid_2_3_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_3']
-dz_grid_2_3_3 = td_nonlin['z_grid_2_3_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_3']
-dz_grid_3_3_1 = td_nonlin['z_grid_3_3_1']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_3']
-dz_grid_3_3_2 = td_nonlin['z_grid_3_3_2']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_3']
-dz_grid_3_3_3 = td_nonlin['z_grid_3_3_3']['productivity_sec_3'] @ dproductivity_sec_3[:,2] + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_3']
-
-#plots
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the least productive')
-axs[0, 0].plot(dz_grid_1_1_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_1_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_1_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_1_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_1_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_1_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_1_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_1_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_1_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the middle one')
-axs[0, 0].plot(dz_grid_1_2_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_2_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_2_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_2_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_2_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_2_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_2_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_2_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_2_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation choices responses to negative productivity shock in sector 3 of the most productive')
-axs[0, 0].plot(dz_grid_1_3_1[:25], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_3_2[:25], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_3_3[:25], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_3_1[:25], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_3_2[:25], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_3_3[:25], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_3_1[:25], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_3_2[:25], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_3_3[:25], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
-plt.show()
-
-# graphs: government spending shock
-rhos = np.array([0.8])
-dG = 0.001 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['G'] @ dG
-dN = td_nonlin['N']['G'] @ dG
-di = td_nonlin['i']['G'] @ dG
-dC = td_nonlin['C']['G'] @ dG
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp government spending shocks')
-axs[0, 0].plot(dY[:25])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:25])
-axs[0, 1].set_title('CB rate')
-axs[1, 0].plot(dN[:25])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('Consumption')
-plt.show()
-
-rhos = np.array([0.8])
-dG = 0.001 * rhos ** (np.arange(T)[:, np.newaxis])
-dC1 = td_nonlin['C1']['G'] @ dG
-dC2 = td_nonlin['C2']['G'] @ dG
-dC3 = td_nonlin['C3']['G'] @ dG
-dC = td_nonlin['C']['G'] @ dG
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to 1 pp government spending shocks')
-axs[0, 0].plot(dC1[:25])
-axs[0, 0].set_title('consumption 1 hh')
-axs[0, 1].plot(dC2[:25])
-axs[0, 1].set_title('consumption 2 hh')
-axs[1, 0].plot(dC3[:25])
-axs[1, 0].set_title('consumption 3 hh')
-axs[1, 1].plot(dC[:25])
-axs[1, 1].set_title('consumption aggregate')
-plt.show()
-
-dY = td_nonlin['Y']['infected'] @ infected
-dN = td_nonlin['N']['infected'] @ infected
-di = td_nonlin['I']['infected'] @ infected
-dC = td_nonlin['C']['infected'] @ infected
-
-# graphs: covid shock
-'''
-rhos = np.array([0.0])
-dcovid = 0.000001 * rhos ** (np.arange(T)[:, np.newaxis])
-#dcovid = 0.1 * rhos ** (np.arange(T)[:, np.newaxis])
-dY = td_nonlin['Y']['covid_shock'] @ dcovid
-dN = td_nonlin['N']['covid_shock'] @ dcovid
-di = td_nonlin['I']['covid_shock'] @ dcovid
-dC = td_nonlin['C']['covid_shock'] @ dcovid
-'''
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to covid shock')
-axs[0, 0].plot(dY[:100])
-axs[0, 0].set_title('GDP')
-axs[0, 1].plot(di[:100])
-axs[0, 1].set_title('Investments')
-axs[1, 0].plot(dN[:100])
-axs[1, 0].set_title('Labor hours')
-axs[1, 1].plot(dC[:100])
-axs[1, 1].set_title('Consumption')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Infected')
+plt.xlabel('quarters')
+plt.ylabel('deviation from ss')
+plt.legend()
 plt.show()
 
 
 
-# responses
-dz_grid_1_1_1 = td_nonlin['z_grid_1_1_1']['infected'] @ infected + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_1']
-dz_grid_1_1_2 = td_nonlin['z_grid_1_1_2']['infected'] @ infected + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_1']
-dz_grid_1_1_3 = td_nonlin['z_grid_1_1_3']['infected'] @ infected + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_1']
-dz_grid_2_1_1 = td_nonlin['z_grid_2_1_1']['infected'] @ infected + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_1']
-dz_grid_2_1_2 = td_nonlin['z_grid_2_1_2']['infected'] @ infected + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_1']
-dz_grid_2_1_3 = td_nonlin['z_grid_2_1_3']['infected'] @ infected + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_1']
-dz_grid_3_1_1 = td_nonlin['z_grid_3_1_1']['infected'] @ infected + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_1']
-dz_grid_3_1_2 = td_nonlin['z_grid_3_1_2']['infected'] @ infected + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_1']
-dz_grid_3_1_3 = td_nonlin['z_grid_3_1_3']['infected'] @ infected + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_1']
 
-dz_grid_1_2_1 = td_nonlin['z_grid_1_2_1']['infected'] @ infected + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_2']
-dz_grid_1_2_2 = td_nonlin['z_grid_1_2_2']['infected'] @ infected + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_2']
-dz_grid_1_2_3 = td_nonlin['z_grid_1_2_3']['infected'] @ infected + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_2']
-dz_grid_2_2_1 = td_nonlin['z_grid_2_2_1']['infected'] @ infected + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_2']
-dz_grid_2_2_2 = td_nonlin['z_grid_2_2_2']['infected'] @ infected + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_2']
-dz_grid_2_2_3 = td_nonlin['z_grid_2_2_3']['infected'] @ infected + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_2']
-dz_grid_3_2_1 = td_nonlin['z_grid_3_2_1']['infected'] @ infected + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_2']
-dz_grid_3_2_2 = td_nonlin['z_grid_3_2_2']['infected'] @ infected + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_2']
-dz_grid_3_2_3 = td_nonlin['z_grid_3_2_3']['infected'] @ infected + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_2']
+dY_nonlin = (td_nonlin['recovered'] - ss['recovered'])
 
-dz_grid_1_3_1 = td_nonlin['z_grid_1_3_1']['infected'] @ infected + ss['N_hh_occ_1_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_1_1']) ** ss['e_grid_3']
-dz_grid_1_3_2 = td_nonlin['z_grid_1_3_2']['infected'] @ infected + ss['N_hh_occ_1_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_1_2']) ** ss['e_grid_3']
-dz_grid_1_3_3 = td_nonlin['z_grid_1_3_3']['infected'] @ infected + ss['N_hh_occ_1_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_1_3']) ** ss['e_grid_3']
-dz_grid_2_3_1 = td_nonlin['z_grid_2_3_1']['infected'] @ infected + ss['N_hh_occ_2_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_2_1']) ** ss['e_grid_3']
-dz_grid_2_3_2 = td_nonlin['z_grid_2_3_2']['infected'] @ infected + ss['N_hh_occ_2_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_2_2']) ** ss['e_grid_3']
-dz_grid_2_3_3 = td_nonlin['z_grid_2_3_3']['infected'] @ infected + ss['N_hh_occ_2_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_2_3']) ** ss['e_grid_3']
-dz_grid_3_3_1 = td_nonlin['z_grid_3_3_1']['infected'] @ infected + ss['N_hh_occ_3_1'] * ss['w_occ_1'] * (1 + ss['gamma_hh_3_1']) ** ss['e_grid_3']
-dz_grid_3_3_2 = td_nonlin['z_grid_3_3_2']['infected'] @ infected + ss['N_hh_occ_3_2'] * ss['w_occ_2'] * (1 + ss['gamma_hh_3_2']) ** ss['e_grid_3']
-dz_grid_3_3_3 = td_nonlin['z_grid_3_3_3']['infected'] @ infected + ss['N_hh_occ_3_3'] * ss['w_occ_3'] * (1 + ss['gamma_hh_3_3']) ** ss['e_grid_3']
-
-
-#plots
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation responses to covid shock of the least productive')
-axs[0, 0].plot(dz_grid_1_1_1[:100], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_1_2[:100], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_1_3[:100], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_1_1[:100], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_1_2[:100], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_1_3[:100], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_1_1[:100], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_1_2[:100], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_1_3[:100], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'Recovered')
+plt.xlabel('quarters')
+plt.ylabel('deviation from ss')
+plt.legend()
 plt.show()
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation responses to covid shock of the middle one')
-axs[0, 0].plot(dz_grid_1_2_1[:100], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_2_2[:100], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_2_3[:100], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_2_1[:100], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_2_2[:100], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_2_3[:100], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_2_1[:100], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_2_2[:100], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_2_3[:100], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_1_1'] - ss['N_occ_sec_1_1']) / ss['N_occ_sec_1_1'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_1_1 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Occupation responses to covid shock of the most productive')
-axs[0, 0].plot(dz_grid_1_3_1[:100], label = "first occupation")
-axs[0, 0].plot(dz_grid_1_3_2[:100], label = "second occupation")
-axs[0, 0].plot(dz_grid_1_3_3[:100], label = "third occupation")
-axs[0, 0].set_title('1 type of consumers')
-axs[0, 1].plot(dz_grid_2_3_1[:100], label = "first occupation")
-axs[0, 1].plot(dz_grid_2_3_2[:100], label = "second occupation")
-axs[0, 1].plot(dz_grid_2_3_3[:100], label = "third occupation")
-axs[0, 1].set_title('2 type of consumers')
-axs[1, 0].plot(dz_grid_3_3_1[:100], label = "first occupation")
-axs[1, 0].plot(dz_grid_3_3_2[:100], label = "second occupation")
-axs[1, 0].plot(dz_grid_3_3_3[:100], label = "third occupation")
-axs[1, 0].set_title('3 type of consumers')
-leg = axs[0,0].legend()
-leg = axs[0,1].legend()
-leg = axs[1,0].legend()
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_2_1'] - ss['N_occ_sec_2_1']) / ss['N_occ_sec_2_1'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_2_1 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_3_1'] - ss['N_occ_sec_3_1']) / ss['N_occ_sec_3_1'])
 
-dC1 = td_nonlin['C1']['infected'] @ infected
-dC2 = td_nonlin['C2']['infected'] @ infected
-dC3 = td_nonlin['C3']['infected'] @ infected
-dC = td_nonlin['C']['infected'] @ infected
-
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to covid shock')
-axs[0, 0].plot(dC1[:100])
-axs[0, 0].set_title('consumption 1 hh')
-axs[0, 1].plot(dC2[:100])
-axs[0, 1].set_title('consumption 2 hh')
-axs[1, 0].plot(dC3[:100])
-axs[1, 0].set_title('consumption 3 hh')
-axs[1, 1].plot(dC[:100])
-axs[1, 1].set_title('consumption aggregate')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_3_1 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-dw1 = td_nonlin['w_occ_1']['infected'] @ infected
-dw2 = td_nonlin['w_occ_2']['infected'] @ infected
-dw3 = td_nonlin['w_occ_3']['infected'] @ infected
-dw = td_nonlin['w']['infected'] @ infected
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_1_2'] - ss['N_occ_sec_1_2']) / ss['N_occ_sec_1_2'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to covid shock')
-axs[0, 0].plot(dw1[:100])
-axs[0, 0].set_title('wage in the first occupation')
-axs[0, 1].plot(dw2[:100])
-axs[0, 1].set_title('wage in the second occupation')
-axs[1, 0].plot(dw3[:100])
-axs[1, 0].set_title('wage in the third occupation')
-axs[1, 1].plot(dw[:100])
-axs[1, 1].set_title('wage aagregate')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_1_2 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_2_2'] - ss['N_occ_sec_2_2']) / ss['N_occ_sec_2_2'])
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-fig.suptitle(r'Responses to covid shock')
-axs[0, 0].plot(susceptible[:100])
-axs[0, 0].set_title('susceptible')
-axs[0, 1].plot(infected[:100])
-axs[0, 1].set_title('infected')
-axs[1, 0].plot(recovered[:100])
-axs[1, 0].set_title('recovered')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_2_2 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-dN_1_1 = td_nonlin['N_occ_sec_1_1']['infected'] @ infected
-dN_1_2 = td_nonlin['N_occ_sec_1_2']['infected'] @ infected
-dN_1_3 = td_nonlin['N_occ_sec_1_3']['infected'] @ infected
-dN_2_1 = td_nonlin['N_occ_sec_2_1']['infected'] @ infected
-dN_2_2 = td_nonlin['N_occ_sec_2_2']['infected'] @ infected
-dN_2_3 = td_nonlin['N_occ_sec_2_3']['infected'] @ infected
-dN_3_1 = td_nonlin['N_occ_sec_3_1']['infected'] @ infected
-dN_3_2 = td_nonlin['N_occ_sec_3_2']['infected'] @ infected
-dN_3_3 = td_nonlin['N_occ_sec_3_3']['infected'] @ infected
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_3_2'] - ss['N_occ_sec_3_2']) / ss['N_occ_sec_3_2'])
 
-fig, axs = plt.subplots(3, 3, figsize=(10, 10))
-fig.suptitle(r'Responses to covid shock')
-axs[0, 0].plot(dN_1_1[:100])
-axs[0, 0].set_title('N sec 1 occ 1')
-axs[0, 1].plot(dN_1_2[:100])
-axs[0, 1].set_title('N sec 2 occ 1')
-axs[0, 2].plot(dN_1_3[:100])
-axs[0, 2].set_title('N sec 3 occ 1')
-
-axs[1, 0].plot(dN_2_1[:100])
-axs[1, 0].set_title('N sec 1 occ 2')
-axs[1, 1].plot(dN_2_2[:100])
-axs[1, 1].set_title('N sec 2 occ 2')
-axs[1, 2].plot(dN_2_3[:100])
-axs[1, 2].set_title('N sec 3 occ 2')
-
-axs[2, 0].plot(dN_3_1[:100])
-axs[2, 0].set_title('N sec 1 occ 3')
-axs[2, 1].plot(dN_3_2[:100])
-axs[2, 1].set_title('N sec 2 occ 3')
-axs[2, 2].plot(dN_3_3[:100])
-axs[2, 2].set_title('N sec 3 occ 3')
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_3_2 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-# graphs: distributions
-plt.plot(ss['a1_grid'][:10], ss['c1'][0, 25, :10].T)
-plt.xlabel('Assets'), plt.ylabel('Consumption')
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_1_3'] - ss['N_occ_sec_1_3']) / ss['N_occ_sec_1_3'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_1_3 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-plt.plot(ss['a2_grid'][:10], ss['c2'][2, 25, :10].T)
-plt.xlabel('Assets'), plt.ylabel('Consumption')
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_2_3'] - ss['N_occ_sec_2_3']) / ss['N_occ_sec_2_3'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_2_3 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
 
-plt.plot(ss['a3_grid'][:10], ss['c3'][2, 25, :10].T)
-plt.xlabel('Assets'), plt.ylabel('Consumption')
+dY_nonlin = 100 * ((td_nonlin['N_occ_sec_3_3'] - ss['N_occ_sec_3_3']) / ss['N_occ_sec_3_3'])
+
+plt.plot(dY_nonlin[:121], label='nonlinear', linestyle='--', linewidth=2.5)
+plt.title(r'N_occ_sec_3_3 response to covid shock')
+plt.xlabel('quarters')
+plt.ylabel('% deviation from ss')
+plt.legend()
 plt.show()
-
-
 
 ##################################################################################################################
 # plot results

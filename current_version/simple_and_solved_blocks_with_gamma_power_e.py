@@ -23,11 +23,11 @@ def finance(i, pi, r, div_sec_1, div_sec_2, div_sec_3, omega, pshare_1, pshare_2
     return rb, ra, fisher
 
 
-@simple_with_vector_args({"occ_1_1": 3, "occ_1_2": 3, "occ_1_3": 3, "occ_2_1": 3, "occ_2_2": 3, "occ_2_3": 3, "occ_3_1": 3, "occ_3_2": 3, "occ_3_3": 3, "occupation_vector_1_1": 3, "q": 3, "gamma_hh_1": 3, "gamma_hh_2": 3, "gamma_hh_3": 3, "w_occ": 3, "N_hh_occ_1": 3, "N_hh_occ_2": 3, "N_hh_occ_3": 3, "possible_occupation": 3, "labor_supply_1": 3, "labor_supply_2": 3, "labor_supply_3": 3, "pi_distribution": 3, "z_grid_1_1": 3, "z_grid_1_2": 3, "z_grid_1_3": 3, "z_grid_2_1": 3, "z_grid_2_2": 3, "z_grid_2_3": 3, "z_grid_3_1": 3, "z_grid_3_2": 3, "z_grid_3_3": 3})
-def labor_supply(Y, q, pi_distribution, possible_occupation, m1, m2, m3, gamma_hh_1, gamma_hh_2, gamma_hh_3, w_occ, N_hh_occ_1, N_hh_occ_2, N_hh_occ_3, e_grid_1, e_grid_2, e_grid_3, infected):
-    q_1 = 1 - Y * infected * 0.82
-    q_2 = 1 - Y * infected * 0.9
-    q_3 = 1 - Y * infected * 0.927
+@simple_with_vector_args({"occ_1_1": 3, "occ_1_2": 3, "occ_1_3": 3, "occ_2_1": 3, "occ_2_2": 3, "occ_2_3": 3, "occ_3_1": 3, "occ_3_2": 3, "occ_3_3": 3, "q": 3, "gamma_hh_1": 3, "gamma_hh_2": 3, "gamma_hh_3": 3, "w_occ": 3, "N_hh_occ_1": 3, "N_hh_occ_2": 3, "N_hh_occ_3": 3, "labor_supply_1": 3, "labor_supply_2": 3, "labor_supply_3": 3, "pi_distribution": 3, "z_grid_1_1": 3, "z_grid_1_2": 3, "z_grid_1_3": 3, "z_grid_2_1": 3, "z_grid_2_2": 3, "z_grid_2_3": 3, "z_grid_3_1": 3, "z_grid_3_2": 3, "z_grid_3_3": 3})
+def labor_supply(N, q, pi_distribution, m1, m2, m3, gamma_hh_1, gamma_hh_2, gamma_hh_3, w_occ, N_hh_occ_1, N_hh_occ_2, N_hh_occ_3, e_grid_1, e_grid_2, e_grid_3, infected):
+    q_1 = 1 - infected * 0.2
+    q_2 = 1 - infected * 0.1
+    q_3 = 1 - infected * 0.3
     z_grid_1_1 = (1 + gamma_hh_1) ** e_grid_1 * w_occ * N_hh_occ_1 * q
     z_grid_1_2 = (1 + gamma_hh_1) ** e_grid_2 * w_occ * N_hh_occ_1 * q
     z_grid_1_3 = (1 + gamma_hh_1) ** e_grid_3 * w_occ * N_hh_occ_1 * q
@@ -138,38 +138,10 @@ def dividend_agg(I_sec_1, I_sec_2, I_sec_3, psip_sec_1, psip_sec_2, psip_sec_3, 
     return I, div, psip
 
 @simple
-def asset_mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, I, C, A, B, psip, ra, rb, mup, Y, r, delta, K, Bg, G, w, N, tax, gamma_hh_1_2, gamma_hh_1_1, gamma_hh_2_3, gamma_hh_2_2, gamma_hh_3_2, gamma_hh_3_3, e_grid_1, e_grid_2, e_grid_3, w_occ_1, w_occ_2, w_occ_3, q_1, q_2, q_3, N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_2_2, N_hh_occ_2_3, N_hh_occ_3_2, N_hh_occ_3_3, m1, m2, m3):
-    z_grid_1_1_2 = (1 + gamma_hh_1_2) ** e_grid_1 * w_occ_2 * N_hh_occ_1_2 * q_2
-    z_grid_1_2_2 = (1 + gamma_hh_1_2) ** e_grid_2 * w_occ_2 * N_hh_occ_1_2 * q_2
-    z_grid_1_3_1 = (1 + gamma_hh_1_1) ** e_grid_3 * w_occ_1 * N_hh_occ_1_1 * q_1
-    z_grid_2_1_3 = (1 + gamma_hh_2_3) ** e_grid_1 * w_occ_3 * N_hh_occ_2_3 * q_3
-    z_grid_2_2_2 = (1 + gamma_hh_2_2) ** e_grid_2 * w_occ_2 * N_hh_occ_2_2 * q_2
-    z_grid_2_3_2 = (1 + gamma_hh_2_2) ** e_grid_3 * w_occ_2 * N_hh_occ_2_2 * q_2
-    z_grid_3_1_2 = (1 + gamma_hh_3_2) ** e_grid_1 * w_occ_2 * N_hh_occ_3_2 * q_2
-    z_grid_3_2_2 = (1 + gamma_hh_3_2) ** e_grid_2 * w_occ_2 * N_hh_occ_3_2 * q_2
-    z_grid_3_3_3 = (1 + gamma_hh_3_3) ** e_grid_3 * w_occ_3 * N_hh_occ_3_3 * q_3
-    income_all_hh = z_grid_1_1_2 * 0.25 * m1 + z_grid_1_2_2 * 0.5 * m1 + z_grid_1_3_1 * 0.25 * m1 + z_grid_2_1_3 * 0.25 * m2 + z_grid_2_2_2 * 0.5 * m2 + z_grid_2_3_2 * 0.25 * m2 + z_grid_3_1_2 * 0.25 * m3 + z_grid_3_2_2 * 0.5 * m3 + z_grid_3_3_3 * 0.25 * m3
+def asset_mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, A, B, Bg):
     asset_mkt = equity_price_sec_1 + equity_price_sec_2 + equity_price_sec_3 + Bg - A - B
-    #asset_mkt = w * N  - income_all_hh
     return asset_mkt
 
-
-'''
-@simple
-def asset_mkt_clearing(equity_price_sec_1, equity_price_sec_2, equity_price_sec_3, A, B, Bg, gamma_hh_1_2, gamma_hh_1_1, gamma_hh_2_3, gamma_hh_2_2, gamma_hh_3_2, gamma_hh_3_3, e_grid_1, e_grid_2, e_grid_3, w_occ_1, w_occ_2, w_occ_3, q_1, q_2, q_3, N_hh_occ_1_1, N_hh_occ_1_2, N_hh_occ_2_2, N_hh_occ_2_3, N_hh_occ_3_2, N_hh_occ_3_3, m1, m2, m3):
-    z_grid_1_1_2 = (1 + gamma_hh_1_2) ** e_grid_1 * w_occ_2 * N_hh_occ_1_2 * q_2
-    z_grid_1_2_2 = (1 + gamma_hh_1_2) ** e_grid_2 * w_occ_2 * N_hh_occ_1_2 * q_2
-    z_grid_1_3_1 = (1 + gamma_hh_1_1) ** e_grid_3 * w_occ_1 * N_hh_occ_1_1 * q_1
-    z_grid_2_1_3 = (1 + gamma_hh_2_3) ** e_grid_1 * w_occ_3 * N_hh_occ_2_3 * q_3
-    z_grid_2_2_2 = (1 + gamma_hh_2_2) ** e_grid_2 * w_occ_2 * N_hh_occ_2_2 * q_2
-    z_grid_2_3_2 = (1 + gamma_hh_2_2) ** e_grid_3 * w_occ_2 * N_hh_occ_2_2 * q_2
-    z_grid_3_1_2 = (1 + gamma_hh_3_2) ** e_grid_1 * w_occ_2 * N_hh_occ_3_2 * q_2
-    z_grid_3_2_2 = (1 + gamma_hh_3_2) ** e_grid_2 * w_occ_2 * N_hh_occ_3_2 * q_2
-    z_grid_3_3_3 = (1 + gamma_hh_3_3) ** e_grid_3 * w_occ_3 * N_hh_occ_3_3 * q_3
-    income_all_hh = z_grid_1_1_2 * 0.25 * m1 + z_grid_1_2_2 * 0.5 * m1 + z_grid_1_3_1 * 0.25 * m1 + z_grid_2_1_3 * 0.25 * m2 + z_grid_2_2_2 * 0.5 * m2 + z_grid_2_3_2 * 0.25 * m2 + z_grid_3_1_2 * 0.25 * m3 + z_grid_3_2_2 * 0.5 * m3 + z_grid_3_3_3 * 0.25 * m3
-    asset_mkt = equity_price_sec_1 + equity_price_sec_2 + equity_price_sec_3 + Bg - income_all_hh * (1 - tax)
-    return asset_mkt
-'''
 
 @simple
 def labor_market_clearing(N_occ_sec_1_1, N_occ_sec_1_2, N_occ_sec_1_3,
@@ -192,7 +164,7 @@ def pricing(mc_sec, r, Y, kappap, mup, eta, p_sec, p, f_sec):
     return nkpc_sec
 
 
-@simple_with_vector_args({"K_sec": 3, "Q_sec": 3, "productivity_sec": 3, "L_sec": 3, "p_sec": 3, "nu_sec": 3, "mc_sec": 3})
+@simple_with_vector_args({"K_sec": 3, "Q_sec": 3, "productivity_sec": 3, "L_sec": 3, "nu_sec": 3, "mc_sec": 3})
 def investment(Q_sec, K_sec, r, L_sec, productivity_sec, delta, epsI, nu_sec, mc_sec):
     inv_sec = (K_sec / K_sec(-1) - 1) / (delta * epsI) + 1 - Q_sec
     val_sec = nu_sec * productivity_sec(+1) * (L_sec(+1) / K_sec) ** (1 - nu_sec) * mc_sec(+1) - (K_sec(+1) / K_sec - (1 - delta) + (K_sec(+1) / K_sec - 1) ** 2 / (2 * delta * epsI)) + K_sec(+1) / K_sec * Q_sec(+1) - (1 + r(+1)) * Q_sec
@@ -252,13 +224,13 @@ def pricing_intermediate(Y, Y_sec, eta, p, f_sec):
 
 production = solved(block_list=[output_aggregation, production_sec, investment, labor_market_clearing,
                                 wage_labor_aggregates, pricing, pricing_intermediate, labor_supply],
-                    unknowns=['Q_sec', 'K_sec', 'Y_sec', 'N_occ_sec_1', 'N_occ_sec_2', 'N_occ_sec_3', 'mc_sec', 'w_occ_1', 'w_occ_2', 'w_occ_3'],
-                    targets=['inv_sec', 'val_sec', 'prod_sec', 'labor_sec_occ_1', 'labor_sec_occ_2', 'labor_sec_occ_3', 'nkpc_sec', 'labor_market_clearing_1', 'labor_market_clearing_2', 'labor_market_clearing_3'],
+                    unknowns=['Q_sec', 'K_sec', 'Y_sec', 'N_occ_sec_1', 'N_occ_sec_2', 'N_occ_sec_3', 'mc_sec', 'w_occ'],
+                    targets=['inv_sec', 'val_sec', 'prod_sec', 'labor_sec_occ_1', 'labor_sec_occ_2', 'labor_sec_occ_3', 'nkpc_sec', 'labor_market_clearing'],
                     vector_arguments={"Q_sec": 3, "K_sec": 3, "Y_sec": 3,
                                       "N_occ_sec_1": 3, "N_occ_sec_2": 3, "N_occ_sec_3": 3,
                                       "mc_sec": 3, "inv_sec": 3, "val_sec": 3, "prod_sec": 3,
                                       "labor_sec_occ_1": 3, "labor_sec_occ_2": 3, "labor_sec_occ_3": 3,
-                                      "nkpc_sec": 3})
+                                      "nkpc_sec": 3, "w_occ": 3, "labor_market_clearing": 3})
 
 
 @simple
@@ -270,7 +242,7 @@ def consumers_aggregator(C1, C2, C3, A1, A2, A3, B1, B2, B3, U1, U2, U3, m1, m2,
     return C, A, B, U
 
 
-@simple
+@solved(unknowns=['susceptible', 'infected', 'recovered'], targets = ['sus_eq', 'inf_eq', 'rec_eq'])
 def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir):
     sus_eq = susceptible - (1 - beta_sir * infected(-1) / (infected(-1) + recovered(-1) + susceptible(-1))
                             ) * susceptible(-1) + covid_shock
@@ -279,10 +251,5 @@ def sir_block(susceptible, infected, recovered, covid_shock, beta_sir, gamma_sir
                          ) * infected(-1) - covid_shock
 
     rec_eq = recovered - recovered(-1) - gamma_sir * infected(-1)
-
-    # q_1 = 1 - infected * 0.5
-    # q_2 = 1 - infected * 0.2
-    # q_3 = 1 - infected
-    #q = 1
 
     return sus_eq, inf_eq, rec_eq
