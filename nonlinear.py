@@ -3,9 +3,24 @@ import utils
 import jacobian as jac
 import het_block as het
 
+def final_ss_sir(ss, beta_sir=1.5, gamma_sir=0.8, noisy=True):
+    """Solve steady state of full GE model. Calibrate (beta, vphi, chi1, alpha, mup, Z) to hit targets for
+       (r, tot_wealth, Bh, K, Y=N=1).
+    """
+    susceptible = 0.2
+    infected_ss = 0
+    recovered_ss = 0.8
+
+    ss_new = ss.copy()
+
+    ss_new.update({'susceptible': susceptible, 'infected': infected_ss, 'recovered': recovered_ss,
+           'beta_sir': beta_sir, 'gamma_sir': gamma_sir, 'covid_shock': 0})
+    return ss_new
+
+
 
 def td_solve(ss, block_list, unknowns, targets, H_U=None, H_U_factored=None, monotonic=False,
-             returnindividual=False, tol=1E-8, maxit=30, noisy=True, save=False, use_saved=False, **kwargs):
+             returnindividual=False, tol=1E-8, maxit=500, noisy=True, save=False, use_saved=False, **kwargs):
     """Solves for GE nonlinear perfect foresight paths for SHADE model, given shocks in kwargs.
 
     Use a quasi-Newton method with the Jacobian H_U mapping unknowns to targets around steady state.
@@ -43,14 +58,14 @@ def td_solve(ss, block_list, unknowns, targets, H_U=None, H_U_factored=None, mon
         break
     
     # initialize guess for unknowns to steady state length T
-    Us = {k: np.full(T, ss[k]) for k in unknowns}
+    ss_final = final_ss_sir(ss)
+    Us = {k: np.full(T, ss_final[k]) for k in unknowns}
     Uvec = jac.pack_vectors(Us, unknowns, T)
-
     # obtain H_U_factored if we don't have it already 
     if H_U_factored is None:
         if H_U is None:
             # not even H_U is supplied, get it (costly if there are HetBlocks)
-            H_U = jac.get_H_U(block_list, unknowns, targets, T, ss, save=save, use_saved=use_saved)
+            H_U = jac.get_H_U(block_list, unknowns, targets, T, ss_final, save=save, use_saved=use_saved)
         H_U_factored = utils.factor(H_U)
 
     # do a topological sort once to avoid some redundancy
@@ -101,7 +116,8 @@ def td_map(ss, block_list, sort=None, monotonic=False, returnindividual=False, *
         # if any input to the block has changed, run the block
         blockoptions = hetoptions if isinstance(block, het.HetBlock) else {}
         if not block.inputs.isdisjoint(results):
-            results.update(block.td(ss, **blockoptions, **{k: results[k] for k in block.inputs if k in results}))
+            my_variable = block.td(ss, **blockoptions, **{k: results[k] for k in block.inputs if k in results})
+            results.update(my_variable)
 
     return results
 

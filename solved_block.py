@@ -1,5 +1,6 @@
 import numpy as np
 import nonlinear
+import nonlinear_2_steady_states
 import jacobian as jac
 from simple_block import simple
 
@@ -73,8 +74,12 @@ class SolvedBlock:
         # TODO: add H_U_factored caching of some kind
         # also, inefficient since we are repeatedly starting from the steady state, need option
         # to provide a guess (not a big deal with just SimpleBlocks, of course)
-        return nonlinear.td_solve(ss, self.block_list, self.unknowns, self.targets, monotonic=monotonic, 
-                                  returnindividual=returnindividual, noisy=noisy, **kwargs)
+        if self.unknowns == ['susceptible', 'infected', 'recovered']:
+            return nonlinear_2_steady_states.td_solve(ss, self.block_list, self.unknowns, self.targets, monotonic=monotonic,
+                                      returnindividual=returnindividual, noisy=noisy, **kwargs)
+        else:
+            return nonlinear.td_solve(ss, self.block_list, self.unknowns, self.targets, monotonic=monotonic,
+                                      returnindividual=returnindividual, noisy=noisy, **kwargs)
     
     def jac(self, ss, T, shock_list, output_list=None, save=False, use_saved=False):
         # H_U_factored caching could be helpful here too
